@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0.0",
+	"FriendlyName": "UnrealDI",
+	"Description": "DI container for Unreal",
+	"Category": "Other",
+	"CreatedBy": "Andrei Sudarikov",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": true,
+	"IsBetaVersion": true,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "UnrealDI",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	]
+}

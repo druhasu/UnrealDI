@@ -5,32 +5,42 @@
 
 UObjectContainer* FObjectContainerBuilder::Build(UObject* Outer)
 {
-    UObjectContainer* Ret = Outer ? NewObject<UObjectContainer>(Outer) : NewObject<UObjectContainer>();
+    UObjectContainer* Container = Outer ? NewObject<UObjectContainer>(Outer) : NewObject<UObjectContainer>();
 
+    AddRegistrationsToContainer(Container);
+
+    return Container;
+}
+
+UObjectContainer* FObjectContainerBuilder::BuildNested(UObjectContainer& Parent)
+{
+    UObjectContainer* Container = NewObject<UObjectContainer>(&Parent);
+    Container->ParentContainer = &Parent;
+
+    AddRegistrationsToContainer(Container);
+
+    return Container;
+}
+
+void FObjectContainerBuilder::AddRegistrationsToContainer(UObjectContainer* Container)
+{
     for (auto& Registration : Registrations)
     {
-        TSharedRef<UnrealDI_Impl::FLifetimeHandler> LifetimeHandler = Registration->GetLifetimeHandler();
+        TSharedRef<UnrealDI_Impl::FLifetimeHandler> LifetimeHandler = Registration->CreateLifetimeHandler();
 
         // if no interface types declared, register as itself
         if (Registration->InterfaceTypes.Num() == 0)
         {
-            Ret->AddRegistration(Registration->ImplClass, LifetimeHandler);
+            Container->AddRegistration(Registration->ImplClass, LifetimeHandler);
         }
 
         // register all interfaces that this type implements
         for (UClass* Interface : Registration->InterfaceTypes)
         {
-            Ret->AddRegistration(Interface, LifetimeHandler);
+            Container->AddRegistration(Interface, LifetimeHandler);
         }
     }
 
     // register container itself as IResolver
-    Ret->AddRegistration(IResolver::UClassType::StaticClass(), MakeShared<UnrealDI_Impl::FLifetimeHandler_Instance>(Ret));
-
-    return Ret;
-}
-
-UObjectContainer* FObjectContainerBuilder::BuildNested(UObjectContainer& Parent)
-{
-    return NewObject<UObjectContainer>();
+    Container->AddRegistration(IResolver::UClassType::StaticClass(), MakeShared<UnrealDI_Impl::FLifetimeHandler_Instance>(Container));
 }

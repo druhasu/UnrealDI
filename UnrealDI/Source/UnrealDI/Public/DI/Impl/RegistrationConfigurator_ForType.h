@@ -36,12 +36,12 @@ namespace UnrealDI_Impl
             : FRegistrationConfiguratorBase(TObject::StaticClass())
             , EffectiveClass(TObject::StaticClass())
         {
-            CreateLifetimeHandler = &ThisType::CreateDefaultLifetimeHandler;
+            LifetimeHandlerFactory = &ThisType::CreateDefaultLifetimeHandler;
         }
 
-        TSharedRef<FLifetimeHandler> GetLifetimeHandler() const override
+        TSharedRef<FLifetimeHandler> CreateLifetimeHandler() const override
         {
-            return CreateLifetimeHandler(this);
+            return LifetimeHandlerFactory(this);
         }
 
     private:
@@ -63,7 +63,7 @@ namespace UnrealDI_Impl
         }
 
         UClass* EffectiveClass;
-        FLifetimeHandlerFactory CreateLifetimeHandler;
+        FLifetimeHandlerFactory LifetimeHandlerFactory;
     };
 
 #undef ThisType

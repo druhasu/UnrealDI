@@ -21,7 +21,7 @@ namespace UnrealDI_Impl
         }
 
         virtual ~FRegistrationConfiguratorBase() = default;
-        virtual TSharedRef<FLifetimeHandler> GetLifetimeHandler() const = 0;
+        virtual TSharedRef<FLifetimeHandler> CreateLifetimeHandler() const = 0;
 
     protected:
         friend class ::FObjectContainerBuilder;

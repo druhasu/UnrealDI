@@ -91,4 +91,18 @@ void DependenciesInjectionSpec::Define()
             TestNotNull("Collection contains nullptr", Interface.GetInterface());
         }
     });
+
+    It("Should Inject Auto Registered Type", [this]()
+    {
+        FObjectContainerBuilder Builder;
+        Builder.RegisterType<UNeedObjectInstance>();
+
+        UObjectContainer* Container = Builder.Build();
+
+        // this call should auto register UMockReader due to dependency from UNeedObjectInstance
+        auto Resolved = Container->Resolve<UNeedObjectInstance>();
+
+        TestNotNull("Resolve returned nullptr", Resolved);
+        TestNotNull("Dependency not injected", Resolved->Instance);
+    });
 }

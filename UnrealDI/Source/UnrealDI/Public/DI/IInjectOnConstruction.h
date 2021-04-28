@@ -36,6 +36,9 @@ protected:
             *NextUObject->GetFName().ToString(), *NextUObject->GetClass()->GetName());
     }
 
+    /*
+     * Call this method from your subclass constructor.
+     */
     template <typename T>
     void TryInitDependencies(T* Self)
     {
@@ -54,6 +57,7 @@ protected:
 private:
     friend class FNewObjectInjector;
 
+    // Pointer to container that should be used by next call to TryInitDependencies
     static UObjectContainer* NextConstructorContainer;
 
     // fields to help find missing calls to TryCallInitDependencies

@@ -42,7 +42,7 @@ void LifetimesSpec::Define()
         });
     });
 
-    Describe("Singleton", [this]()
+    Describe("SingleInstance", [this]()
     {
         It("Should Resolve", [this]()
         {
@@ -93,7 +93,7 @@ void LifetimesSpec::Define()
         });
     });
 
-    Describe("WeakSingleton", [this]()
+    Describe("WeakSingleInstance", [this]()
     {
         It("Should Resolve", [this]()
         {

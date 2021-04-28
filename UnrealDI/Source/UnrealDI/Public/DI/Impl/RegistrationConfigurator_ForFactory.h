@@ -37,7 +37,7 @@ namespace UnrealDI_Impl
         {
         }
 
-        TSharedRef<FLifetimeHandler> GetLifetimeHandler() const override
+        TSharedRef<FLifetimeHandler> CreateLifetimeHandler() const override
         {
             return MakeShared<UnrealDI_Impl::FLifetimeHandler_Transient>(GetFactory());
         }

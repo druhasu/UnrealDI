@@ -7,6 +7,9 @@
 #include "DI/Impl/IsUInterface.h"
 #include "DI/Impl/StaticClass.h"
 
+/*
+ * Iterator for TObjectsCollection
+ */
 template<typename T>
 class TObjectsCollectionIterator
 {
@@ -37,7 +40,8 @@ private:
 };
 
 /*
- * Contains a collection of objects that were resolved
+ * Contains a collection of objects that were resolved.
+ * This collection may be iterated with range based for loop.
  */
 template<typename T>
 class TObjectsCollection
@@ -48,16 +52,27 @@ class TObjectsCollection
 public:
     using ReturnType = decltype(GetReturnType<T>());
 
+    /*
+     * Constructs empty collection
+     */
     TObjectsCollection()
+        : Data(nullptr)
     {
     }
 
+    /*
+     * Constructs collection from memory and count.
+     * Collection will own the memory and will free it when destroyed.
+     */
     TObjectsCollection(UObject** Data, int32 Count)
         : Data(Data)
         , Count(Count)
     {
     }
 
+    /*
+     * Move constructs from other collection
+     */
     template<typename U>
     TObjectsCollection(TObjectsCollection<U>&& Other)
         : Data(Other.Data)
@@ -76,14 +91,43 @@ public:
         }
     }
 
-    bool IsValid()
+    /*
+     * Returns true if collection has valid memory pointer.
+     */
+    bool IsValid() const
     {
         return Data != nullptr;
     }
 
-    int32 Num()
+    /*
+     * Returns amount of objects in a collection.
+     */
+    int32 Num() const
     {
         return Count;
+    }
+
+    /*
+     * Converts this collection to TArray.
+     */
+    TArray<ReturnType> ToArray() const
+    {
+        TArray<ReturnType> Result;
+        ToArray(Result);
+        return Result;
+    }
+
+    /*
+     * Fills provided TArray with pointers to objects from this collection.
+     */
+    void ToArray(TArray<ReturnType>& OutArray) const
+    {
+        OutArray.Reserve(OutArray.Num() + Count);
+
+        for (int32 i = 0; i < Count; ++i)
+        {
+            OutArray.Emplace(ReturnType{ *(Data + i) });
+        }
     }
 
     // Non-copyable

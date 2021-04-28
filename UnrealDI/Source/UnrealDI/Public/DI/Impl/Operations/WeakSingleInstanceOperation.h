@@ -16,7 +16,7 @@ namespace RegistrationOperations
         TConfigurator& WeakSingleInstance()
         {
             TConfigurator& This = StaticCast<TConfigurator&>(*this);
-            This.CreateLifetimeHandler = &WeakSingleInstanceOperation::CreateLifetimeHandler;
+            This.LifetimeHandlerFactory = &WeakSingleInstanceOperation::CreateLifetimeHandler;
 
             return This;
         }

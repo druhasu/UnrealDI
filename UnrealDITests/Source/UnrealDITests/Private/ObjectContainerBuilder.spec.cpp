@@ -20,7 +20,18 @@ void ObjectContainerBuilderSpec::Define()
         
         UObjectContainer* Container = Builder.Build();
         
-        TestNotNull("Container", Container);
+        TestNotNull("Container not built", Container);
+    });
+
+    It("Should Create Nested Container", [this]()
+    {
+        FObjectContainerBuilder Builder;
+        UObjectContainer* Container = Builder.Build();
+
+        FObjectContainerBuilder Builder2;
+        UObjectContainer* NestedContainer = Builder.BuildNested(*Container);
+
+        TestNotNull("NestedContainer not built", NestedContainer);
     });
 
     Describe("Register Type", [this]()

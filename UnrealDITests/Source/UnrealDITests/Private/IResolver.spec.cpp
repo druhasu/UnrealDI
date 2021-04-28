@@ -41,4 +41,28 @@ void IResolverSpec::Define()
 
         TestNotNull("Resolve returned nullptr", Reader.GetInterface());
     });
+
+    It("Should ResolveAll By UClass", [this]()
+    {
+        TObjectsCollection<UObject> Readers = BuildContainer()->ResolveAll(UMockReader::StaticClass());
+
+        TestTrue("Resolve returned invalid collection", Readers.IsValid());
+        TestTrue("Resolve returned empty collection", Readers.Num() > 0);
+    });
+
+    It("Should ResolveAll By Concrete Type Template", [this]()
+    {
+        TObjectsCollection<UObject> Readers = BuildContainer()->ResolveAll<UMockReader>();
+
+        TestTrue("Resolve returned invalid collection", Readers.IsValid());
+        TestTrue("Resolve returned empty collection", Readers.Num() > 0);
+    });
+
+    It("Should ResolveAll By Interface Template", [this]()
+    {
+        TObjectsCollection<UObject> Readers = BuildContainer()->ResolveAll<IReader>();
+
+        TestTrue("Resolve returned invalid collection", Readers.IsValid());
+        TestTrue("Resolve returned empty collection", Readers.Num() > 0);
+    });
 }

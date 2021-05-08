@@ -51,7 +51,7 @@ namespace UnrealDI_Impl
 
         TFunction< TObject* () > Factory;
 
-        FInstanceFactoryCallable GetFactory() const
+        FInstanceFactoryResult GetFactory() const
         {
             // store Factory in a variable to capture only it, instead of this
             auto FactoryVar = Factory;

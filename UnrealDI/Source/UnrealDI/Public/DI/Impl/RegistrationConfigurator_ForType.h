@@ -52,7 +52,7 @@ namespace UnrealDI_Impl
         friend class RegistrationOperations::WeakSingleInstanceOperation< ThisType >;
         friend class RegistrationOperations::FromBlueprintOperation< ThisType, TObject >;
 
-        FInstanceFactoryCallable GetFactory() const
+        FInstanceFactoryResult GetFactory() const
         {
             return TInstanceFactory<TObject>::CreateFactory(EffectiveClass);
         }

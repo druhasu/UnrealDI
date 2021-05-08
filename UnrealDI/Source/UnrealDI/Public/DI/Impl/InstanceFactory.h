@@ -6,19 +6,13 @@
 #include "DI/Impl/ArgumentPack.h"
 #include "DI/Impl/InitMethodTypologyDeducer.h"
 #include "DI/Impl/IsSupportedArgument.h"
+#include "DI/Impl/InstanceFactoryResult.h"
 #include "Templates/EnableIf.h"
 #include "Blueprint/UserWidget.h"
 
 namespace UnrealDI_Impl
 {
     class FRegistrationStorage;
-
-    // Wrapper struct to hold pointer to blueprint class so GC won't destroy it
-    struct FInstanceFactoryCallable
-    {
-        TFunction<UObject* (FRegistrationStorage&)> Function;
-        UClass* BlueprintClass;
-    };
 
     namespace Details
     {
@@ -45,11 +39,11 @@ namespace UnrealDI_Impl
         template <typename T>
         struct TInstanceFactory<T, TArgumentPack<>, typename TEnableObjectFactory<T>::Type >
         {
-            static FInstanceFactoryCallable CreateFactory(UClass* EffectiveClass)
+            static FInstanceFactoryResult CreateFactory(UClass* EffectiveClass)
             {
                 check(EffectiveClass);
 
-                return FInstanceFactoryCallable
+                return FInstanceFactoryResult
                 {
                     [EffectiveClass](FRegistrationStorage& Resolver)
                     {
@@ -64,11 +58,11 @@ namespace UnrealDI_Impl
         template <typename T, typename... TArgs>
         struct TInstanceFactory<T, TArgumentPack<TArgs...>, typename TEnableObjectFactory<T>::Type >
         {
-            static FInstanceFactoryCallable CreateFactory(UClass* EffectiveClass)
+            static FInstanceFactoryResult CreateFactory(UClass* EffectiveClass)
             {
                 check(EffectiveClass);
 
-                return FInstanceFactoryCallable
+                return FInstanceFactoryResult
                 {
                     [EffectiveClass](FRegistrationStorage& Resolver)
                     {
@@ -85,11 +79,11 @@ namespace UnrealDI_Impl
         template <typename T>
         struct TInstanceFactory<T, TArgumentPack<>, typename TEnableActorFactory<T>::Type >
         {
-            static FInstanceFactoryCallable CreateFactory(UClass* EffectiveClass)
+            static FInstanceFactoryResult CreateFactory(UClass* EffectiveClass)
             {
                 check(EffectiveClass);
 
-                return FInstanceFactoryCallable
+                return FInstanceFactoryResult
                 {
                     [EffectiveClass](FRegistrationStorage& Resolver)
                     {
@@ -106,11 +100,11 @@ namespace UnrealDI_Impl
         template <typename T, typename... TArgs>
         struct TInstanceFactory<T, TArgumentPack<TArgs...>, typename TEnableActorFactory<T>::Type >
         {
-            static FInstanceFactoryCallable CreateFactory(UClass* EffectiveClass)
+            static FInstanceFactoryResult CreateFactory(UClass* EffectiveClass)
             {
                 check(EffectiveClass);
 
-                return FInstanceFactoryCallable
+                return FInstanceFactoryResult
                 {
                     [EffectiveClass](FRegistrationStorage& Resolver)
                     {
@@ -130,9 +124,9 @@ namespace UnrealDI_Impl
         template <typename T>
         struct TInstanceFactory<T, TArgumentPack<>, typename TEnableWidgetFactory<T>::Type >
         {
-            static FInstanceFactoryCallable CreateFactory(UClass* EffectiveClass)
+            static FInstanceFactoryResult CreateFactory(UClass* EffectiveClass)
             {
-                return FInstanceFactoryCallable
+                return FInstanceFactoryResult
                 {
                     [EffectiveClass](FRegistrationStorage& Resolver)
                     {
@@ -150,9 +144,9 @@ namespace UnrealDI_Impl
         template <typename T, typename... TArgs>
         struct TInstanceFactory<T, TArgumentPack<TArgs...>, typename TEnableWidgetFactory<T>::Type >
         {
-            static FInstanceFactoryCallable CreateFactory(UClass* EffectiveClass)
+            static FInstanceFactoryResult CreateFactory(UClass* EffectiveClass)
             {
-                return FInstanceFactoryCallable
+                return FInstanceFactoryResult
                 {
                     [EffectiveClass](FRegistrationStorage& Resolver)
                     {

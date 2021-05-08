@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "DI/Impl/InstanceFactory.h"
+#include "DI/Impl/InstanceFactoryResult.h"
 #include "UObject/Object.h"
 
 namespace UnrealDI_Impl
@@ -21,7 +21,7 @@ namespace UnrealDI_Impl
     class FLifetimeHandler_Transient : public FLifetimeHandler
     {
     public:
-        FLifetimeHandler_Transient(FInstanceFactoryCallable&& Factory)
+        FLifetimeHandler_Transient(FInstanceFactoryResult&& Factory)
             : Factory(MoveTemp(Factory))
         {
         }
@@ -33,7 +33,7 @@ namespace UnrealDI_Impl
         }
 
     private:
-        FInstanceFactoryCallable Factory;
+        FInstanceFactoryResult Factory;
     };
 
     class FLifetimeHandler_Instance : public FLifetimeHandler
@@ -57,7 +57,7 @@ namespace UnrealDI_Impl
     class FLifetimeHandler_SingleInstance : public FLifetimeHandler
     {
     public:
-        FLifetimeHandler_SingleInstance(FInstanceFactoryCallable&& Factory)
+        FLifetimeHandler_SingleInstance(FInstanceFactoryResult&& Factory)
             : Factory(MoveTemp(Factory))
         {
         }
@@ -71,13 +71,13 @@ namespace UnrealDI_Impl
 
     private:
         UObject* Instance = nullptr;
-        FInstanceFactoryCallable Factory;
+        FInstanceFactoryResult Factory;
     };
 
     class FLifetimeHandler_WeakSingleInstance : public FLifetimeHandler
     {
     public:
-        FLifetimeHandler_WeakSingleInstance(FInstanceFactoryCallable&& Factory)
+        FLifetimeHandler_WeakSingleInstance(FInstanceFactoryResult&& Factory)
             : Factory(MoveTemp(Factory))
         {
         }
@@ -90,6 +90,6 @@ namespace UnrealDI_Impl
 
     private:
         TWeakObjectPtr<UObject> Instance = nullptr;
-        FInstanceFactoryCallable Factory;
+        FInstanceFactoryResult Factory;
     };
 }

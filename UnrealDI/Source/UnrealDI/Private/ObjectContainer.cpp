@@ -5,6 +5,7 @@
 #include "DI/Impl/RegistrationConfiguratorBase.h"
 #include "DI/ObjectsCollection.h"
 
+
 UObject* UObjectContainer::Resolve(UClass* Type)
 {
     checkf(Type, TEXT("Requested object of null type"));

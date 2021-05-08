@@ -17,6 +17,7 @@ namespace UnrealDI_Impl
     class FLifetimeHandler;
     class FRegistrationConfiguratorBase;
     template <typename T> struct TDependencyResolver;
+    template <typename T> class TRegistrationConfigurator_ForType;
 
     class UNREALDI_API FRegistrationStorage
     {

@@ -24,7 +24,7 @@ namespace UnrealDI_Impl
     template <typename T>
     struct TStaticClass<T, typename TEnableIf< TIsDerivedFrom< T, UObject >::Value >::Type >
     {
-        using Type = typename T;
+        using Type = T;
 
         static UClass* StaticClass() { return Type::StaticClass(); }
     };

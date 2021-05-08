@@ -8,6 +8,8 @@
 
 namespace UnrealDI_Impl
 {
+    class FRegistrationStorage;
+
     /*
      * Invokes IResolverImpl with correct argument
      * Main purpose of this class is to provide conversion operator to be called with type of argument that InitDependencies requested
@@ -15,7 +17,7 @@ namespace UnrealDI_Impl
     template <typename TParent>
     struct TDependencyResolverInvoker
     {
-        TDependencyResolverInvoker(UObjectContainer& Resolver)
+        TDependencyResolverInvoker(FRegistrationStorage& Resolver)
             : Resolver(Resolver)
         {
         }
@@ -35,6 +37,6 @@ namespace UnrealDI_Impl
             return TDependencyResolver< TDependency >::Resolve(Resolver);
         }
 
-        UObjectContainer& Resolver;
+        FRegistrationStorage& Resolver;
     };
 }

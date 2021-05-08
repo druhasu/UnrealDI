@@ -4,18 +4,17 @@
 
 #include "DI/Impl/InstanceFactory.h"
 #include "UObject/Object.h"
-#include "Templates/Function.h"
-
-class UObjectContainer;
 
 namespace UnrealDI_Impl
 {
+    class FRegistrationStorage;
+
     class FLifetimeHandler
     {
     public:
         virtual ~FLifetimeHandler() = default;
 
-        virtual UObject* Get(UObjectContainer& Resolver) = 0;
+        virtual UObject* Get(FRegistrationStorage& Resolver) = 0;
         virtual void AddReferencedObjects(FReferenceCollector& Collector) = 0;
     };
 
@@ -27,7 +26,7 @@ namespace UnrealDI_Impl
         {
         }
 
-        UObject* Get(UObjectContainer& Resolver) override { return Factory.Function(Resolver); }
+        UObject* Get(FRegistrationStorage& Resolver) override { return Factory.Function(Resolver); }
         void AddReferencedObjects(FReferenceCollector& Collector) override
         {
             Collector.AddReferencedObject(Factory.BlueprintClass);
@@ -45,7 +44,7 @@ namespace UnrealDI_Impl
         {
         }
 
-        UObject* Get(UObjectContainer& Resolver) override { return Instance; }
+        UObject* Get(FRegistrationStorage& Resolver) override { return Instance; }
         void AddReferencedObjects(FReferenceCollector& Collector) override
         {
             Collector.AddReferencedObject(Instance);
@@ -63,7 +62,7 @@ namespace UnrealDI_Impl
         {
         }
 
-        UObject* Get(UObjectContainer& Resolver) override { return Instance ? Instance : (Instance = Factory.Function(Resolver)); }
+        UObject* Get(FRegistrationStorage& Resolver) override { return Instance ? Instance : (Instance = Factory.Function(Resolver)); }
         void AddReferencedObjects(FReferenceCollector& Collector) override
         {
             Collector.AddReferencedObject(Instance);
@@ -83,7 +82,7 @@ namespace UnrealDI_Impl
         {
         }
 
-        UObject* Get(UObjectContainer& Resolver) override { return Instance.IsValid() ? Instance.Get() : (Instance = Factory.Function(Resolver)).Get(); }
+        UObject* Get(FRegistrationStorage& Resolver) override { return Instance.IsValid() ? Instance.Get() : (Instance = Factory.Function(Resolver)).Get(); }
         void AddReferencedObjects(FReferenceCollector& Collector) override
         {
             Collector.AddReferencedObject(Factory.BlueprintClass);

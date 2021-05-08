@@ -57,7 +57,7 @@ namespace UnrealDI_Impl
             auto FactoryVar = Factory;
             return
             {
-                [FactoryVar = MoveTemp(FactoryVar)] (UObjectContainer& Resolver)
+                [FactoryVar = MoveTemp(FactoryVar)] (FRegistrationStorage& Resolver)
                 {
                     auto Ret = FactoryVar();
                     using Invoker = UnrealDI_Impl::TInitDependenciesInvoker<TObject, UnrealDI_Impl::TInitMethodTypologyDeducer< TObject >>;

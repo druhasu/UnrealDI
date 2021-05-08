@@ -4,9 +4,8 @@
 
 #include "DI/Factory.h"
 #include "DI/ObjectsCollection.h"
-#include "DI/Impl/IsUInterface.h"
+#include "DI/Impl/RegistrationStorage.h"
 #include "DI/Impl/StaticClass.h"
-#include "Templates/EnableIf.h"
 #include "UObject/ScriptInterface.h"
 
 namespace UnrealDI_Impl
@@ -20,7 +19,7 @@ namespace UnrealDI_Impl
     {
         using ReturnType = T*;
 
-        static ReturnType Resolve(UObjectContainer& Resolver)
+        static ReturnType Resolve(FRegistrationStorage& Resolver)
         {
             // call ResolveImpl here to leverage auto-registration of concrete types
             return Cast<T>(Resolver.ResolveImpl<T>());
@@ -32,7 +31,7 @@ namespace UnrealDI_Impl
     {
         using ReturnType = TScriptInterface<T>;
 
-        static ReturnType Resolve(UObjectContainer& Resolver)
+        static ReturnType Resolve(FRegistrationStorage& Resolver)
         {
             // call ResolveImpl here to leverage auto-registration of concrete types
             return Resolver.ResolveImpl<T>();
@@ -44,9 +43,9 @@ namespace UnrealDI_Impl
     {
         using ReturnType = TObjectsCollection<T>;
 
-        static ReturnType Resolve(UObjectContainer& Resolver)
+        static ReturnType Resolve(FRegistrationStorage& Resolver)
         {
-            return Resolver.ResolveAll<T>();
+            return Resolver.ResolveAll(TStaticClass<T>::StaticClass());
         }
     };
 
@@ -55,7 +54,7 @@ namespace UnrealDI_Impl
     {
         using ReturnType = TFactory<T>;
 
-        static ReturnType Resolve(UObjectContainer& Resolver)
+        static ReturnType Resolve(FRegistrationStorage& Resolver)
         {
             return TFactory<T>(Resolver);
         }

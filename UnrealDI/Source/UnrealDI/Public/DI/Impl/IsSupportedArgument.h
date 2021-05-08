@@ -2,15 +2,14 @@
 
 #pragma once
 
-#include "DI/Factory.h"
-#include "DI/ObjectsCollection.h"
-#include "DI/Impl/DependencyResolver.h"
 #include "DI/Impl/IsUInterface.h"
 #include "Templates/UnrealTypeTraits.h"
 
+template <typename T> class TFactory;
+template <typename T> class TObjectsCollection;
+
 namespace UnrealDI_Impl
 {
-
     namespace Details
     {
 
@@ -41,11 +40,6 @@ namespace UnrealDI_Impl
      * Allows using T&, const T& or T&& if T itself is supported
      */
     template <typename T>
-    struct TIsSupportedArgument : TIntegralConstant
-    <
-        bool,
-        Details::TIsSupportedArgument< typename TDecay< T >::Type >::Value
-    >
-    {};
+    using TIsSupportedArgument = typename Details::TIsSupportedArgument< typename TDecay< T >::Type >;
 
 }

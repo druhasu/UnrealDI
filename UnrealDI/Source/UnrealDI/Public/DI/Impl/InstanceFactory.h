@@ -7,13 +7,16 @@
 #include "DI/Impl/InitMethodTypologyDeducer.h"
 #include "DI/Impl/IsSupportedArgument.h"
 #include "Templates/EnableIf.h"
+#include "Blueprint/UserWidget.h"
 
 namespace UnrealDI_Impl
 {
+    class FRegistrationStorage;
+
     // Wrapper struct to hold pointer to blueprint class so GC won't destroy it
     struct FInstanceFactoryCallable
     {
-        TFunction<UObject* (UObjectContainer&)> Function;
+        TFunction<UObject* (FRegistrationStorage&)> Function;
         UClass* BlueprintClass;
     };
 
@@ -48,9 +51,9 @@ namespace UnrealDI_Impl
 
                 return FInstanceFactoryCallable
                 {
-                    [EffectiveClass](UObjectContainer& Resolver)
+                    [EffectiveClass](FRegistrationStorage& Resolver)
                     {
-                        return NewObject<T>(&Resolver, EffectiveClass);
+                        return NewObject<T>(Resolver.GetOwner(), EffectiveClass);
                     },
                     EffectiveClass
                 };
@@ -67,9 +70,9 @@ namespace UnrealDI_Impl
 
                 return FInstanceFactoryCallable
                 {
-                    [EffectiveClass](UObjectContainer& Resolver)
+                    [EffectiveClass](FRegistrationStorage& Resolver)
                     {
-                        T* Ret = NewObject<T>(&Resolver, EffectiveClass);
+                        T* Ret = NewObject<T>(Resolver.GetOwner(), EffectiveClass);
                         TInitDependenciesInvoker<T, TArgumentPack<TArgs...>>::Invoke(Ret, Resolver);
                         return Ret;
                     },
@@ -88,7 +91,7 @@ namespace UnrealDI_Impl
 
                 return FInstanceFactoryCallable
                 {
-                    [EffectiveClass](UObjectContainer& Resolver)
+                    [EffectiveClass](FRegistrationStorage& Resolver)
                     {
                         UWorld* World = Resolver.GetWorld();
                         checkf(World, TEXT("Cannot retrive World from container. Make sure you provided valid Outer to FObjectContainerBuilder::Build"));
@@ -109,7 +112,7 @@ namespace UnrealDI_Impl
 
                 return FInstanceFactoryCallable
                 {
-                    [EffectiveClass](UObjectContainer& Resolver)
+                    [EffectiveClass](FRegistrationStorage& Resolver)
                     {
                         UWorld* World = Resolver.GetWorld();
                         checkf(World, TEXT("Cannot retrive World from container. Make sure you provided valid Outer to FObjectContainerBuilder::Build"));
@@ -131,7 +134,7 @@ namespace UnrealDI_Impl
             {
                 return FInstanceFactoryCallable
                 {
-                    [EffectiveClass](UObjectContainer& Resolver)
+                    [EffectiveClass](FRegistrationStorage& Resolver)
                     {
                         check(EffectiveClass);
                         UWorld* World = Resolver.GetWorld();
@@ -151,7 +154,7 @@ namespace UnrealDI_Impl
             {
                 return FInstanceFactoryCallable
                 {
-                    [EffectiveClass](UObjectContainer& Resolver)
+                    [EffectiveClass](FRegistrationStorage& Resolver)
                     {
                         check(EffectiveClass);
                         UWorld* World = Resolver.GetWorld();

@@ -15,7 +15,7 @@ namespace RegistrationOperations
         template<typename TInterface>
         TConfigurator& As()
         {
-            static_assert(TIsDerivedFrom<TConfigurator::ImplType, TInterface>::Value, "Implementation type must be derived from Interface type");
+            static_assert(TIsDerivedFrom<typename TConfigurator::ImplType, TInterface>::Value, "Implementation type must be derived from Interface type");
 
             TConfigurator& This = StaticCast<TConfigurator&>(*this);
             This.InterfaceTypes.AddUnique(TInterface::UClassType::StaticClass());

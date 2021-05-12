@@ -9,7 +9,7 @@ namespace UnrealDI_Impl
 namespace RegistrationOperations
 {
     template<typename TConfigurator>
-    class ByInterfacesOperation
+    class TByInterfacesOperation
     {
     public:
         TConfigurator& ByInterfaces()

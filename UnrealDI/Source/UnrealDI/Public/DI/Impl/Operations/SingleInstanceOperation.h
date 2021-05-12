@@ -10,13 +10,13 @@ namespace UnrealDI_Impl
 namespace RegistrationOperations
 {
     template<typename TConfigurator>
-    class SingleInstanceOperation
+    class TSingleInstanceOperation
     {
     public:
         TConfigurator& SingleInstance()
         {
             TConfigurator& This = StaticCast<TConfigurator&>(*this);
-            This.LifetimeHandlerFactory = &SingleInstanceOperation::CreateLifetimeHandler;
+            This.LifetimeHandlerFactory = &TSingleInstanceOperation::CreateLifetimeHandler;
 
             return This;
         }

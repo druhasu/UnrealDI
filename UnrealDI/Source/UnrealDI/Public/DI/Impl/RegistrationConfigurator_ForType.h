@@ -18,12 +18,12 @@ namespace UnrealDI_Impl
     template<typename TObject>
     class TRegistrationConfigurator_ForType
         : public FRegistrationConfiguratorBase
-        , public RegistrationOperations::AsOperation< ThisType >
-        , public RegistrationOperations::AsSelfOperation< ThisType >
-        , public RegistrationOperations::ByInterfacesOperation< ThisType >
-        , public RegistrationOperations::SingleInstanceOperation< ThisType >
-        , public RegistrationOperations::WeakSingleInstanceOperation< ThisType >
-        , public RegistrationOperations::FromBlueprintOperation< ThisType, TObject >
+        , public RegistrationOperations::TAsOperation< ThisType >
+        , public RegistrationOperations::TAsSelfOperation< ThisType >
+        , public RegistrationOperations::TByInterfacesOperation< ThisType >
+        , public RegistrationOperations::TSingleInstanceOperation< ThisType >
+        , public RegistrationOperations::TWeakSingleInstanceOperation< ThisType >
+        , public RegistrationOperations::TFromBlueprintOperation< ThisType, TObject >
     {
     public:
         using ImplType = TObject;
@@ -45,12 +45,12 @@ namespace UnrealDI_Impl
         }
 
     private:
-        friend class RegistrationOperations::AsOperation< ThisType >;
-        friend class RegistrationOperations::AsSelfOperation< ThisType >;
-        friend class RegistrationOperations::ByInterfacesOperation< ThisType >;
-        friend class RegistrationOperations::SingleInstanceOperation< ThisType >;
-        friend class RegistrationOperations::WeakSingleInstanceOperation< ThisType >;
-        friend class RegistrationOperations::FromBlueprintOperation< ThisType, TObject >;
+        friend class RegistrationOperations::TAsOperation< ThisType >;
+        friend class RegistrationOperations::TAsSelfOperation< ThisType >;
+        friend class RegistrationOperations::TByInterfacesOperation< ThisType >;
+        friend class RegistrationOperations::TSingleInstanceOperation< ThisType >;
+        friend class RegistrationOperations::TWeakSingleInstanceOperation< ThisType >;
+        friend class RegistrationOperations::TFromBlueprintOperation< ThisType, TObject >;
 
         FInstanceFactoryResult GetFactory() const
         {

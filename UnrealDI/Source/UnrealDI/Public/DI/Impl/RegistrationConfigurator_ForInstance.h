@@ -13,9 +13,9 @@ namespace UnrealDI_Impl
     template<typename TObject>
     class TRegistrationConfigurator_ForInstance
         : public FRegistrationConfiguratorBase
-        , public RegistrationOperations::AsOperation< TRegistrationConfigurator_ForInstance<TObject> >
-        , public RegistrationOperations::AsSelfOperation< TRegistrationConfigurator_ForInstance<TObject> >
-        , public RegistrationOperations::ByInterfacesOperation< TRegistrationConfigurator_ForInstance<TObject> >
+        , public RegistrationOperations::TAsOperation< TRegistrationConfigurator_ForInstance<TObject> >
+        , public RegistrationOperations::TAsSelfOperation< TRegistrationConfigurator_ForInstance<TObject> >
+        , public RegistrationOperations::TByInterfacesOperation< TRegistrationConfigurator_ForInstance<TObject> >
     {
     public:
         using ImplType = TObject;
@@ -35,9 +35,9 @@ namespace UnrealDI_Impl
         }
 
     private:
-        friend class RegistrationOperations::AsOperation< TRegistrationConfigurator_ForInstance<TObject> >;
-        friend class RegistrationOperations::AsSelfOperation< TRegistrationConfigurator_ForInstance<TObject> >;
-        friend class RegistrationOperations::ByInterfacesOperation< TRegistrationConfigurator_ForInstance<TObject> >;
+        friend class RegistrationOperations::TAsOperation< TRegistrationConfigurator_ForInstance<TObject> >;
+        friend class RegistrationOperations::TAsSelfOperation< TRegistrationConfigurator_ForInstance<TObject> >;
+        friend class RegistrationOperations::TByInterfacesOperation< TRegistrationConfigurator_ForInstance<TObject> >;
 
         TObject* Instance;
     };

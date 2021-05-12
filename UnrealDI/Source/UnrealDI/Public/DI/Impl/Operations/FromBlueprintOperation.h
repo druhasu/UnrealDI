@@ -9,7 +9,7 @@ namespace UnrealDI_Impl
 namespace RegistrationOperations
 {
     template<typename TConfigurator, typename TImpl>
-    class FromBlueprintOperation
+    class TFromBlueprintOperation
     {
     public:
         TConfigurator& FromBlueprint(TSubclassOf<TImpl> Class)

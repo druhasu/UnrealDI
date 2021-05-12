@@ -9,7 +9,7 @@ namespace UnrealDI_Impl
 namespace RegistrationOperations
 {
     template<typename TConfigurator>
-    class AsOperation
+    class TAsOperation
     {
     public:
         template<typename TInterface>

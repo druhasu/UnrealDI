@@ -10,13 +10,13 @@ namespace UnrealDI_Impl
 namespace RegistrationOperations
 {
     template<typename TConfigurator>
-    class WeakSingleInstanceOperation
+    class TWeakSingleInstanceOperation
     {
     public:
         TConfigurator& WeakSingleInstance()
         {
             TConfigurator& This = StaticCast<TConfigurator&>(*this);
-            This.LifetimeHandlerFactory = &WeakSingleInstanceOperation::CreateLifetimeHandler;
+            This.LifetimeHandlerFactory = &TWeakSingleInstanceOperation::CreateLifetimeHandler;
 
             return This;
         }

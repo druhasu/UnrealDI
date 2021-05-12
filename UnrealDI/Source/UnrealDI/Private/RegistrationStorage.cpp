@@ -32,12 +32,11 @@ TObjectsCollection<UObject> FRegistrationStorage::ResolveAll(UClass* Type)
     return TObjectsCollection<UObject>(Data, TotalResolvers);
 }
 
-void FRegistrationStorage::AddRegistration(UClass* Interface, TSharedPtr<FLifetimeHandler> Lifetime)
+void FRegistrationStorage::AddRegistration(UClass* Interface, const TSharedRef<FLifetimeHandler>& Lifetime)
 {
     TArray<FResolver>& Resolvers = Registrations.FindOrAdd(Interface);
 
-    FResolver NewResolver;
-    NewResolver.LifetimeHandler = Lifetime;
+    FResolver NewResolver{ FName(NAME_None), Lifetime };
 
     Resolvers.Emplace(NewResolver);
 }

@@ -33,7 +33,7 @@ namespace UnrealDI_Impl
         struct FResolver
         {
             FName Name;
-            TSharedPtr<FLifetimeHandler> LifetimeHandler;
+            TSharedRef<FLifetimeHandler> LifetimeHandler;
         };
 
         template <typename T>
@@ -42,14 +42,14 @@ namespace UnrealDI_Impl
         TObjectsCollection<UObject> ResolveAll(UClass* Type);
 
         template <typename TTypeToRegister>
-        typename TEnableIf< TIsDerivedFrom< TTypeToRegister, UObject >::Value, TSharedPtr< FLifetimeHandler > >::Type
+        typename TEnableIf< TIsDerivedFrom< TTypeToRegister, UObject >::Value, TSharedRef< FLifetimeHandler > >::Type
         TryAutoRegisterType(UClass* Type);
 
         template <typename TTypeToRegister>
-        typename TEnableIf< !TIsDerivedFrom< TTypeToRegister, UObject >::Value, TSharedPtr< FLifetimeHandler > >::Type
+        typename TEnableIf< !TIsDerivedFrom< TTypeToRegister, UObject >::Value, TSharedRef< FLifetimeHandler > >::Type
         TryAutoRegisterType(UClass* Type);
 
-        void AddRegistration(UClass* Interface, TSharedPtr< FLifetimeHandler > Lifetime);
+        void AddRegistration(UClass* Interface, const TSharedRef< FLifetimeHandler >& Lifetime);
 
         FResolver* FindResolver(UClass* Type);
         void AppendObjectsCollection(UClass* Type, UObject**& Data);
@@ -81,12 +81,12 @@ UObject* UnrealDI_Impl::FRegistrationStorage::ResolveImpl()
 }
 
 template <typename TTypeToRegister>
-typename TEnableIf< TIsDerivedFrom< TTypeToRegister, UObject >::Value, TSharedPtr< UnrealDI_Impl::FLifetimeHandler > >::Type
+typename TEnableIf< TIsDerivedFrom< TTypeToRegister, UObject >::Value, TSharedRef< UnrealDI_Impl::FLifetimeHandler > >::Type
 UnrealDI_Impl::FRegistrationStorage::TryAutoRegisterType(UClass* Type)
 {
     // add registration with default lifetime for TTypeToRegister
     UnrealDI_Impl::TRegistrationConfigurator_ForType<TTypeToRegister> Configurator;
-    TSharedPtr<UnrealDI_Impl::FLifetimeHandler> Lifetime = Configurator.CreateLifetimeHandler();
+    TSharedRef<UnrealDI_Impl::FLifetimeHandler> Lifetime = Configurator.CreateLifetimeHandler();
 
     AddRegistration(Type, Lifetime);
 
@@ -94,10 +94,12 @@ UnrealDI_Impl::FRegistrationStorage::TryAutoRegisterType(UClass* Type)
 }
 
 template <typename TTypeToRegister>
-typename TEnableIf< !TIsDerivedFrom< TTypeToRegister, UObject >::Value, TSharedPtr< UnrealDI_Impl::FLifetimeHandler > >::Type
+typename TEnableIf< !TIsDerivedFrom< TTypeToRegister, UObject >::Value, TSharedRef< UnrealDI_Impl::FLifetimeHandler > >::Type
 UnrealDI_Impl::FRegistrationStorage::TryAutoRegisterType(UClass* Type)
 {
     // this overload is for types that cannot be auto registered
     checkf(false, TEXT("Type %s is not registered and may not be auto registered. Only types derived from UObject may be auto registered"), *Type->GetName());
-    return nullptr;
+
+    static TSharedRef<UnrealDI_Impl::FLifetimeHandler> Empty = MakeShared<UnrealDI_Impl::FLifetimeHandler_Instance>(nullptr);
+    return Empty;
 }

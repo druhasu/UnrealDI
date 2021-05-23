@@ -35,26 +35,7 @@ namespace UnrealDI_Impl
         template <typename T, typename TArgumentPack, typename = void>
         struct TInstanceFactory;
 
-        // specialization for UObject without dependencies
-        template <typename T>
-        struct TInstanceFactory<T, TArgumentPack<>, typename TEnableObjectFactory<T>::Type >
-        {
-            static FInstanceFactoryResult CreateFactory(UClass* EffectiveClass)
-            {
-                check(EffectiveClass);
-
-                return FInstanceFactoryResult
-                {
-                    [EffectiveClass](FRegistrationStorage& Resolver)
-                    {
-                        return NewObject<T>(Resolver.GetOwner(), EffectiveClass);
-                    },
-                    EffectiveClass
-                };
-            }
-        };
-
-        // specialization for UObject with dependencies
+        // specialization for UObject
         template <typename T, typename... TArgs>
         struct TInstanceFactory<T, TArgumentPack<TArgs...>, typename TEnableObjectFactory<T>::Type >
         {
@@ -75,28 +56,7 @@ namespace UnrealDI_Impl
             }
         };
 
-        // specialization for AActor without dependencies
-        template <typename T>
-        struct TInstanceFactory<T, TArgumentPack<>, typename TEnableActorFactory<T>::Type >
-        {
-            static FInstanceFactoryResult CreateFactory(UClass* EffectiveClass)
-            {
-                check(EffectiveClass);
-
-                return FInstanceFactoryResult
-                {
-                    [EffectiveClass](FRegistrationStorage& Resolver)
-                    {
-                        UWorld* World = Resolver.GetWorld();
-                        checkf(World, TEXT("Cannot retrive World from container. Make sure you provided valid Outer to FObjectContainerBuilder::Build"));
-                        return World->SpawnActor<T>(EffectiveClass, FTransform::Identity);
-                    },
-                    EffectiveClass
-                };
-            }
-        };
-
-        // specialization for AActor with dependencies
+        // specialization for AActor
         template <typename T, typename... TArgs>
         struct TInstanceFactory<T, TArgumentPack<TArgs...>, typename TEnableActorFactory<T>::Type >
         {
@@ -120,37 +80,18 @@ namespace UnrealDI_Impl
             }
         };
 
-        // specialization for UUserWidget without dependencies
-        template <typename T>
-        struct TInstanceFactory<T, TArgumentPack<>, typename TEnableWidgetFactory<T>::Type >
-        {
-            static FInstanceFactoryResult CreateFactory(UClass* EffectiveClass)
-            {
-                return FInstanceFactoryResult
-                {
-                    [EffectiveClass](FRegistrationStorage& Resolver)
-                    {
-                        check(EffectiveClass);
-                        UWorld* World = Resolver.GetWorld();
-                        checkf(World, TEXT("Cannot retrive World from container. Make sure you provided valid Outer to FObjectContainerBuilder::Build"));
-                        return CreateWidget<T>(World, EffectiveClass);
-                    },
-                    EffectiveClass
-                };
-            }
-        };
-
-        // specialization for UUserWidget with dependencies
+        // specialization for UUserWidget
         template <typename T, typename... TArgs>
         struct TInstanceFactory<T, TArgumentPack<TArgs...>, typename TEnableWidgetFactory<T>::Type >
         {
             static FInstanceFactoryResult CreateFactory(UClass* EffectiveClass)
             {
+                check(EffectiveClass);
+
                 return FInstanceFactoryResult
                 {
                     [EffectiveClass](FRegistrationStorage& Resolver)
                     {
-                        check(EffectiveClass);
                         UWorld* World = Resolver.GetWorld();
                         checkf(World, TEXT("Cannot retrive World from container. Make sure you provided valid Outer to FObjectContainerBuilder::Build"));
                         T* Ret = CreateWidget<T>(World, EffectiveClass);

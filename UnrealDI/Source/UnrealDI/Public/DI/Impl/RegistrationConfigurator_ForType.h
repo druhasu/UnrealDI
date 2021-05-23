@@ -10,6 +10,8 @@
 #include "DI/Impl/Operations/WeakSingleInstanceOperation.h"
 #include "DI/Impl/Operations/FromBlueprintOperation.h"
 #include "DI/Impl/InstanceFactory.h"
+#include "UObject/Interface.h"
+#include "Templates/UnrealTypeTraits.h"
 
 namespace UnrealDI_Impl
 {
@@ -36,6 +38,9 @@ namespace UnrealDI_Impl
             : FRegistrationConfiguratorBase(TObject::StaticClass())
             , EffectiveClass(TObject::StaticClass())
         {
+            // warn user if he tries to register UInterface boilerplate class instead of actual implementation
+            static_assert(!TIsDerivedFrom<TObject, UInterface>::Value, "You are trying to register UInterface derived class. This is probably a typo");
+
             LifetimeHandlerFactory = &ThisType::CreateDefaultLifetimeHandler;
         }
 

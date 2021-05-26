@@ -28,6 +28,9 @@ namespace UnrealDI_Impl
         , public RegistrationOperations::TFromBlueprintOperation< ThisType, TObject >
     {
     public:
+        // warn user if he tries to register UInterface boilerplate class instead of actual implementation
+        static_assert(!TIsDerivedFrom<TObject, UInterface>::Value, "You are trying to register UInterface derived class. This is probably a typo");
+
         using ImplType = TObject;
         using FLifetimeHandlerFactory = TSharedRef<FLifetimeHandler>(*)(const ThisType*);
 
@@ -38,9 +41,6 @@ namespace UnrealDI_Impl
             : FRegistrationConfiguratorBase(TObject::StaticClass())
             , EffectiveClass(TObject::StaticClass())
         {
-            // warn user if he tries to register UInterface boilerplate class instead of actual implementation
-            static_assert(!TIsDerivedFrom<TObject, UInterface>::Value, "You are trying to register UInterface derived class. This is probably a typo");
-
             LifetimeHandlerFactory = &ThisType::CreateDefaultLifetimeHandler;
         }
 

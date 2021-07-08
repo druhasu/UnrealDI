@@ -13,6 +13,7 @@ namespace RegistrationOperations
     class TSingleInstanceOperation
     {
     public:
+        /* Only one instance will be created. Container will keep strong reference to this instance */
         TConfigurator& SingleInstance()
         {
             TConfigurator& This = StaticCast<TConfigurator&>(*this);

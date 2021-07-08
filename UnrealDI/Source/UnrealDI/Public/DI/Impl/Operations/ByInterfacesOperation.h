@@ -12,6 +12,7 @@ namespace RegistrationOperations
     class TByInterfacesOperation
     {
     public:
+        /* Registers type to be resolvable as all intefaces that it implements */
         TConfigurator& ByInterfaces()
         {
             TConfigurator& This = StaticCast<TConfigurator&>(*this);

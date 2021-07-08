@@ -12,6 +12,7 @@ namespace RegistrationOperations
     class TFromBlueprintOperation
     {
     public:
+        /* Specifies subclass that will be instatiated instead of registered type */
         TConfigurator& FromBlueprint(TSubclassOf<TImpl> Class)
         {
             check(Class.Get());

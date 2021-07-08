@@ -12,6 +12,7 @@ namespace RegistrationOperations
     class TAsOperation
     {
     public:
+        /* Registers type as to be resolvable as TInterface */
         template<typename TInterface>
         TConfigurator& As()
         {

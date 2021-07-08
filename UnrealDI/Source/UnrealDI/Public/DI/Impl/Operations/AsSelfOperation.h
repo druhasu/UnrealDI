@@ -12,6 +12,7 @@ namespace RegistrationOperations
     class TAsSelfOperation
     {
     public:
+        /* Registers type to be resolvable as itself */
         TConfigurator& AsSelf()
         {
             TConfigurator& This = StaticCast<TConfigurator&>(*this);

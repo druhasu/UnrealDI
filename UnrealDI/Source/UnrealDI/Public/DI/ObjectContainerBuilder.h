@@ -7,6 +7,7 @@
 #include "DI/Impl/RegistrationConfigurator_ForType.h"
 #include "DI/Impl/RegistrationConfigurator_ForInstance.h"
 #include "DI/Impl/RegistrationConfigurator_ForFactory.h"
+#include "DI/Impl/RegistrationConfigurator_ForCDO.h"
 
 class UObject;
 class UObjectContainer;
@@ -50,6 +51,15 @@ public:
     UnrealDI_Impl::TRegistrationConfigurator_ForFactory<TObject>& RegisterFactory(TFunction< TObject* () > Factory)
     {
         return AddConfigurator< UnrealDI_Impl::TRegistrationConfigurator_ForFactory< TObject > >(Factory);
+    }
+
+    /*
+     * Adds registration for type TObject using its CDO.
+     */
+    template<typename TObject>
+    UnrealDI_Impl::TRegistrationConfigurator_ForCDO<TObject>& RegisterDefault()
+    {
+        return AddConfigurator< UnrealDI_Impl::TRegistrationConfigurator_ForCDO< TObject > >();
     }
 
     /* 

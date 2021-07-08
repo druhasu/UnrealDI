@@ -248,4 +248,86 @@ void ObjectContainerBuilderSpec::Define()
             TestTrue("IReader not registered", Container->IsRegistered<IReader>());
         });
     });
+
+    Describe("Register Default", [this]()
+    {
+        It("Should Register Default", [this]()
+        {
+            FObjectContainerBuilder Builder;
+            Builder.RegisterDefault<UMockReader>();
+
+            UObjectContainer* Container = Builder.Build();
+
+            TestNotNull("Container is nullptr", Container);
+            TestTrue("UMockReader not registered", Container->IsRegistered<UMockReader>());
+        });
+
+        It("Should Register Default As Self", [this]()
+        {
+            FObjectContainerBuilder Builder;
+            Builder.RegisterDefault<UMockReader>().AsSelf();
+
+            UObjectContainer* Container = Builder.Build();
+
+            TestNotNull("Container is nullptr", Container);
+            TestTrue("UMockReader not registered", Container->IsRegistered<UMockReader>());
+        });
+
+        It("Should Register Default As Interface", [this]()
+        {
+            FObjectContainerBuilder Builder;
+            Builder.RegisterDefault<UMockReader>().As<IReader>();
+
+            UObjectContainer* Container = Builder.Build();
+
+            TestNotNull("Container is nullptr", Container);
+            TestTrue("IReader not registered", Container->IsRegistered<IReader>());
+            TestFalse("UMockReader should not be registered", Container->IsRegistered<UMockReader>());
+        });
+
+        It("Should Register Default As Interface And Self", [this]()
+        {
+            FObjectContainerBuilder Builder;
+            Builder.RegisterDefault<UMockReader>().As<IReader>().AsSelf();
+
+            UObjectContainer* Container = Builder.Build();
+
+            TestNotNull("Container is nullptr", Container);
+            TestTrue("IReader not registered", Container->IsRegistered<IReader>());
+        });
+
+        It("Should Register Default By Interfaces", [this]()
+        {
+            FObjectContainerBuilder Builder;
+            Builder.RegisterDefault<UMockReader>().ByInterfaces();
+
+            UObjectContainer* Container = Builder.Build();
+
+            TestNotNull("Container is nullptr", Container);
+            TestTrue("IReader not registered", Container->IsRegistered<IReader>());
+            TestFalse("UMockReader should not be registered", Container->IsRegistered<UMockReader>());
+        });
+
+        It("Should Register Default By Interfaces And Self", [this]()
+        {
+            FObjectContainerBuilder Builder;
+            Builder.RegisterDefault<UMockReader>().ByInterfaces().AsSelf();
+
+            UObjectContainer* Container = Builder.Build();
+
+            TestNotNull("Container is nullptr", Container);
+            TestTrue("IReader not registered", Container->IsRegistered<IReader>());
+        });
+
+        It("Should Resolve Default Object", [this]()
+        {
+            FObjectContainerBuilder Builder;
+            Builder.RegisterDefault<UMockReader>();
+
+            UObjectContainer* Container = Builder.Build();
+            UMockReader* Resolved = Container->Resolve<UMockReader>();
+
+            TestEqual("Returned non default object", Resolved, GetMutableDefault<UMockReader>());
+        });
+    });
 }

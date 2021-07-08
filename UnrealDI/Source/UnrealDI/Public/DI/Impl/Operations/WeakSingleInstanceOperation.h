@@ -13,6 +13,7 @@ namespace RegistrationOperations
     class TWeakSingleInstanceOperation
     {
     public:
+        /* Only one instance will be created. Container will not keep a strong reference to this instance */
         TConfigurator& WeakSingleInstance()
         {
             TConfigurator& This = StaticCast<TConfigurator&>(*this);

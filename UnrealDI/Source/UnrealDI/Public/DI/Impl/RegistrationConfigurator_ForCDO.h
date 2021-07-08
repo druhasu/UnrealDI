@@ -10,10 +10,10 @@
 
 namespace UnrealDI_Impl
 {
-#define ThisType TRegistrationConfigurator_ForInstance<TObject>
+#define ThisType TRegistrationConfigurator_ForCDO<TObject>
 
     template<typename TObject>
-    class TRegistrationConfigurator_ForInstance
+    class TRegistrationConfigurator_ForCDO
         : public FRegistrationConfiguratorBase
         , public RegistrationOperations::TAsOperation< ThisType >
         , public RegistrationOperations::TAsSelfOperation< ThisType >
@@ -22,26 +22,23 @@ namespace UnrealDI_Impl
     public:
         using ImplType = TObject;
 
-        TRegistrationConfigurator_ForInstance(const TRegistrationConfigurator_ForInstance&) = delete;
-        TRegistrationConfigurator_ForInstance(TRegistrationConfigurator_ForInstance&&) = default;
+        TRegistrationConfigurator_ForCDO(const TRegistrationConfigurator_ForCDO&) = delete;
+        TRegistrationConfigurator_ForCDO(TRegistrationConfigurator_ForCDO&&) = default;
 
-        TRegistrationConfigurator_ForInstance(TObject* Instance)
+        TRegistrationConfigurator_ForCDO()
             : FRegistrationConfiguratorBase(TObject::StaticClass())
-            , Instance(Instance)
         {
         }
 
         TSharedRef<FLifetimeHandler> CreateLifetimeHandler() const override
         {
-            return MakeShared<UnrealDI_Impl::FLifetimeHandler_Instance>(Instance);
+            return MakeShared<UnrealDI_Impl::FLifetimeHandler_Transient>(FInstanceFactoryResult{ [](auto&) { return GetMutableDefault<TObject>(); }, nullptr });
         }
 
     private:
         friend class RegistrationOperations::TAsOperation< ThisType >;
         friend class RegistrationOperations::TAsSelfOperation< ThisType >;
         friend class RegistrationOperations::TByInterfacesOperation< ThisType >;
-
-        TObject* Instance;
     };
 
 #undef ThisType

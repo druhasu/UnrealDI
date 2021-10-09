@@ -14,10 +14,11 @@ namespace RegistrationOperations
     {
     public:
         /* Only one instance will be created. Container will keep strong reference to this instance */
-        TConfigurator& SingleInstance()
+        TConfigurator& SingleInstance(bool bAutoCreate = false)
         {
             TConfigurator& This = StaticCast<TConfigurator&>(*this);
             This.LifetimeHandlerFactory = &TSingleInstanceOperation::CreateLifetimeHandler;
+            This.bAutoCreate = bAutoCreate;
 
             return This;
         }

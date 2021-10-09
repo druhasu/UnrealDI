@@ -28,5 +28,6 @@ namespace UnrealDI_Impl
 
         UClass* ImplClass;
         TArray<UClass*> InterfaceTypes;
+        bool bAutoCreate = false;
     };
 }

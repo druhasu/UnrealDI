@@ -12,6 +12,20 @@
 BEGIN_DEFINE_SPEC(LifetimesSpec, "UnrealDI.Lifetimes", EAutomationTestFlags::ClientContext | EAutomationTestFlags::EditorContext | EAutomationTestFlags::ServerContext | EAutomationTestFlags::EngineFilter)
 END_DEFINE_SPEC(LifetimesSpec)
 
+template <typename T>
+struct CreateListener : public FUObjectArray::FUObjectCreateListener
+{
+    CreateListener() { GUObjectArray.AddUObjectCreateListener(this); }
+    ~CreateListener() { GUObjectArray.RemoveUObjectCreateListener(this); }
+    void NotifyUObjectCreated(const UObjectBase* Object, int32 Index)
+    {
+        WasCreated |= Object->GetClass() == T::StaticClass();
+    }
+    void OnUObjectArrayShutdown() {}
+
+    bool WasCreated = false;
+};
+
 void LifetimesSpec::Define()
 {
     Describe("Transient", [this]()
@@ -90,6 +104,28 @@ void LifetimesSpec::Define()
                 Container->RemoveFromRoot();
                 return true;
             }));
+        });
+
+        It("Should Create Instance After Build If AutoCreate=true", [this]()
+        {
+            FObjectContainerBuilder Builder;
+            Builder.RegisterType<UMockReader>().SingleInstance(true);
+            
+            CreateListener<UMockReader> Listener;
+            UObjectContainer* Container = Builder.Build();
+
+            TestTrue("Object was not created", Listener.WasCreated);
+        });
+
+        It("Should Not Create Instance After Build If AutoCreate=false", [this]()
+        {
+            FObjectContainerBuilder Builder;
+            Builder.RegisterType<UMockReader>().SingleInstance(/* false */);
+
+            CreateListener<UMockReader> Listener;
+            UObjectContainer* Container = Builder.Build();
+
+            TestFalse("Object was created", Listener.WasCreated);
         });
     });
 

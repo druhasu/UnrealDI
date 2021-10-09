@@ -45,4 +45,14 @@ void FObjectContainerBuilder::AddRegistrationsToContainer(UObjectContainer* Cont
 
     // register container itself as IResolver
     Container->AddRegistration(IResolver::UClassType::StaticClass(), MakeShared<UnrealDI_Impl::FLifetimeHandler_Instance>(Container));
+
+    // resolve all classes that are marked with bAutoCreate
+    for (auto& Registration : Registrations)
+    {
+        if (Registration->bAutoCreate)
+        {
+            UClass* ClassToResolve = Registration->InterfaceTypes.Num() > 0 ? Registration->InterfaceTypes[0] : Registration->ImplClass;
+            Container->Resolve(ClassToResolve);
+        }
+    }
 }

@@ -5,6 +5,25 @@
 
 using namespace UnrealDI_Impl;
 
+void FRegistrationStorage::InitStorage(UObject* InOwner)
+{
+    Owner = InOwner;
+
+    OuterForNewObject = nullptr;
+    for (UObject* NextOuter = Owner->GetOuter(); OuterForNewObject == nullptr && NextOuter != nullptr; NextOuter = NextOuter->GetOuter())
+    {
+        if (NextOuter->IsA<UWorld>() || NextOuter->IsA<UGameInstance>())
+        {
+            OuterForNewObject = NextOuter;
+        }
+    }
+
+    if (OuterForNewObject == nullptr)
+    {
+        OuterForNewObject = GetTransientPackage();
+    }
+}
+
 TObjectsCollection<UObject> FRegistrationStorage::ResolveAll(UClass* Type)
 {
     checkf(Type, TEXT("Requested object of null type"));

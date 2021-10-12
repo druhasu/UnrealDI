@@ -23,6 +23,7 @@ namespace UnrealDI_Impl
     {
     public:
         UObject* GetOwner() const { return Owner; }
+        UObject* GetOuterForNewObject() const { return OuterForNewObject; }
         UWorld* GetWorld() const { return Owner->GetWorld(); }
 
     protected:
@@ -35,6 +36,8 @@ namespace UnrealDI_Impl
             FName Name;
             TSharedRef<FLifetimeHandler> LifetimeHandler;
         };
+
+        void InitStorage(UObject* InOwner);
 
         template <typename T>
         UObject* ResolveImpl();
@@ -55,6 +58,7 @@ namespace UnrealDI_Impl
         void AppendObjectsCollection(UClass* Type, UObject**& Data);
 
         UObject* Owner = nullptr;
+        UObject* OuterForNewObject = nullptr;
         UObjectContainer* ParentContainer = nullptr;
 
         TMap<UClass*, TArray<FResolver>> Registrations;

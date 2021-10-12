@@ -47,7 +47,7 @@ namespace UnrealDI_Impl
                 {
                     [EffectiveClass](FRegistrationStorage& Resolver)
                     {
-                        T* Ret = NewObject<T>(Resolver.GetOwner(), EffectiveClass);
+                        T* Ret = NewObject<T>(Resolver.GetOuterForNewObject(), EffectiveClass);
                         TInitDependenciesInvoker<T, TArgumentPack<TArgs...>>::Invoke(Ret, Resolver);
                         return Ret;
                     },

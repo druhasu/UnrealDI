@@ -57,9 +57,9 @@ namespace UnrealDI_Impl
         friend class RegistrationOperations::TWeakSingleInstanceOperation< ThisType >;
         friend class RegistrationOperations::TFromBlueprintOperation< ThisType, TObject >;
 
-        FInstanceFactoryResult GetFactory() const
+        FInstanceFactoryInvoker GetFactory() const
         {
-            return TInstanceFactory<TObject>::CreateFactory(EffectiveClass);
+            return { &TInstanceFactory<TObject>::CreateInstance, EffectiveClass };
         }
 
         static TSharedRef<FLifetimeHandler> CreateDefaultLifetimeHandler(const ThisType* This)

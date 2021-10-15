@@ -5,8 +5,6 @@
 #include "DI/Impl/InitDependenciesInvoker.h"
 #include "DI/Impl/ArgumentPack.h"
 #include "DI/Impl/InitMethodTypologyDeducer.h"
-#include "DI/Impl/IsSupportedArgument.h"
-#include "DI/Impl/InstanceFactoryResult.h"
 #include "Templates/EnableIf.h"
 #include "Blueprint/UserWidget.h"
 
@@ -29,8 +27,8 @@ namespace UnrealDI_Impl
         struct TEnableWidgetFactory : TEnableIf< TIsDerivedFrom<T, UUserWidget>::Value > {};
 
         /*
-         * Provides static CreateFactory method.
-         * CreateFactory will return TFunction that creates instance of type T with arguments from TArgumentPack
+         * Provides static CreateInstance method.
+         * CreateInstance will create instance of type T with dependenices based on arguments from TArgumentPack
          */
         template <typename T, typename TArgumentPack, typename = void>
         struct TInstanceFactory;
@@ -39,20 +37,11 @@ namespace UnrealDI_Impl
         template <typename T, typename... TArgs>
         struct TInstanceFactory<T, TArgumentPack<TArgs...>, typename TEnableObjectFactory<T>::Type >
         {
-            static FInstanceFactoryResult CreateFactory(UClass* EffectiveClass)
+            static UObject* CreateInstance(FRegistrationStorage& Resolver, UClass* EffectiveClass)
             {
-                check(EffectiveClass);
-
-                return FInstanceFactoryResult
-                {
-                    [EffectiveClass](FRegistrationStorage& Resolver)
-                    {
-                        T* Ret = NewObject<T>(Resolver.GetOuterForNewObject(), EffectiveClass);
-                        TInitDependenciesInvoker<T, TArgumentPack<TArgs...>>::Invoke(Ret, Resolver);
-                        return Ret;
-                    },
-                    EffectiveClass
-                };
+                T* Ret = NewObject<T>(Resolver.GetOuterForNewObject(), EffectiveClass);
+                TInitDependenciesInvoker<T, TArgumentPack<TArgs...>>::Invoke(Ret, Resolver);
+                return Ret;
             }
         };
 
@@ -60,23 +49,14 @@ namespace UnrealDI_Impl
         template <typename T, typename... TArgs>
         struct TInstanceFactory<T, TArgumentPack<TArgs...>, typename TEnableActorFactory<T>::Type >
         {
-            static FInstanceFactoryResult CreateFactory(UClass* EffectiveClass)
+            static UObject* CreateInstance(FRegistrationStorage& Resolver, UClass* EffectiveClass)
             {
-                check(EffectiveClass);
-
-                return FInstanceFactoryResult
-                {
-                    [EffectiveClass](FRegistrationStorage& Resolver)
-                    {
-                        UWorld* World = Resolver.GetWorld();
-                        checkf(World, TEXT("Cannot retrive World from container. Make sure you provided valid Outer to FObjectContainerBuilder::Build"));
-                        T* Ret = World->SpawnActorDeferred<T>(EffectiveClass, FTransform::Identity);
-                        TInitDependenciesInvoker<T, TArgumentPack<TArgs...>>::Invoke(Ret, Resolver);
-                        Ret->FinishSpawning(FTransform::Identity);
-                        return Ret;
-                    },
-                    EffectiveClass
-                };
+                UWorld* World = Resolver.GetWorld();
+                checkf(World, TEXT("Cannot retrieve World from container. Make sure you provided valid Outer to FObjectContainerBuilder::Build"));
+                T* Ret = World->SpawnActorDeferred<T>(EffectiveClass, FTransform::Identity);
+                TInitDependenciesInvoker<T, TArgumentPack<TArgs...>>::Invoke(Ret, Resolver);
+                Ret->FinishSpawning(FTransform::Identity);
+                return Ret;
             }
         };
 
@@ -84,29 +64,20 @@ namespace UnrealDI_Impl
         template <typename T, typename... TArgs>
         struct TInstanceFactory<T, TArgumentPack<TArgs...>, typename TEnableWidgetFactory<T>::Type >
         {
-            static FInstanceFactoryResult CreateFactory(UClass* EffectiveClass)
+            static UObject* CreateInstance(FRegistrationStorage& Resolver, UClass* EffectiveClass)
             {
-                check(EffectiveClass);
-
-                return FInstanceFactoryResult
-                {
-                    [EffectiveClass](FRegistrationStorage& Resolver)
-                    {
-                        UWorld* World = Resolver.GetWorld();
-                        checkf(World, TEXT("Cannot retrive World from container. Make sure you provided valid Outer to FObjectContainerBuilder::Build"));
-                        T* Ret = CreateWidget<T>(World, EffectiveClass);
-                        TInitDependenciesInvoker<T, TArgumentPack<TArgs...>>::Invoke(Ret, Resolver);
-                        return Ret;
-                    },
-                    EffectiveClass
-                };
+                UWorld* World = Resolver.GetWorld();
+                checkf(World, TEXT("Cannot retrieve World from container. Make sure you provided valid Outer to FObjectContainerBuilder::Build"));
+                T* Ret = CreateWidget<T>(World, EffectiveClass);
+                TInitDependenciesInvoker<T, TArgumentPack<TArgs...>>::Invoke(Ret, Resolver);
+                return Ret;
             }
         };
     }
 
     /*
-     * Provides static CreateFactory method.
-     * CreateFactory will return TFunction that creates instance of type T with required dependencies
+     * Provides static CreateInstance method.
+     * CreateInstance will return instance of type T with required dependencies
      */
     template <typename T>
     using TInstanceFactory = Details::TInstanceFactory< T, TInitMethodTypologyDeducer< T > >;

@@ -39,7 +39,7 @@ namespace UnrealDI_Impl
 
         TSharedRef<FLifetimeHandler> CreateLifetimeHandler() const override
         {
-            return MakeShared<UnrealDI_Impl::FLifetimeHandler_Transient>(GetFactory());
+            return MakeShared<UnrealDI_Impl::FLifetimeHandler_CustomFactory>(*reinterpret_cast<const TFunction< UObject* () >*>(&Factory));
         }
 
     private:
@@ -50,23 +50,6 @@ namespace UnrealDI_Impl
         friend class RegistrationOperations::TWeakSingleInstanceOperation< ThisType >;
 
         TFunction< TObject* () > Factory;
-
-        FInstanceFactoryResult GetFactory() const
-        {
-            // store Factory in a variable to capture only it, instead of this
-            auto FactoryVar = Factory;
-            return
-            {
-                [FactoryVar = MoveTemp(FactoryVar)] (FRegistrationStorage& Resolver)
-                {
-                    auto Ret = FactoryVar();
-                    using Invoker = UnrealDI_Impl::TInitDependenciesInvoker<TObject, UnrealDI_Impl::TInitMethodTypologyDeducer< TObject >>;
-                    Invoker::Invoke(Ret, Resolver);
-                    return Ret;
-                },
-                nullptr // we don't need to keep any additional class alive
-            };
-        }
     };
 
 #undef ThisType

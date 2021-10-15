@@ -32,13 +32,18 @@ namespace UnrealDI_Impl
 
         TSharedRef<FLifetimeHandler> CreateLifetimeHandler() const override
         {
-            return MakeShared<UnrealDI_Impl::FLifetimeHandler_Transient>(FInstanceFactoryResult{ [](auto&) { return GetMutableDefault<TObject>(); }, nullptr });
+            return MakeShared<UnrealDI_Impl::FLifetimeHandler_Transient>(FInstanceFactoryInvoker{ &ThisType::GetDefaultInstance, nullptr });
         }
 
     private:
         friend class RegistrationOperations::TAsOperation< ThisType >;
         friend class RegistrationOperations::TAsSelfOperation< ThisType >;
         friend class RegistrationOperations::TByInterfacesOperation< ThisType >;
+
+        static UObject* GetDefaultInstance(FRegistrationStorage&, UClass*)
+        {
+            return GetMutableDefault<TObject>();
+        }
     };
 
 #undef ThisType

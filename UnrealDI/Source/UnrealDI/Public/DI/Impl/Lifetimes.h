@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "DI/Impl/InstanceFactoryResult.h"
+#include "DI/Impl/InstanceFactoryInvoker.h"
 #include "UObject/Object.h"
 
 namespace UnrealDI_Impl
@@ -21,19 +21,34 @@ namespace UnrealDI_Impl
     class FLifetimeHandler_Transient : public FLifetimeHandler
     {
     public:
-        FLifetimeHandler_Transient(FInstanceFactoryResult&& Factory)
+        FLifetimeHandler_Transient(FInstanceFactoryInvoker&& Factory)
             : Factory(MoveTemp(Factory))
         {
         }
 
-        UObject* Get(FRegistrationStorage& Resolver) override { return Factory.Function(Resolver); }
+        UObject* Get(FRegistrationStorage& Resolver) override { return Factory.Invoke(Resolver); }
         void AddReferencedObjects(FReferenceCollector& Collector) override
         {
-            Collector.AddReferencedObject(Factory.BlueprintClass);
+            Collector.AddReferencedObject(Factory.EffectiveClass);
         }
 
     private:
-        FInstanceFactoryResult Factory;
+        FInstanceFactoryInvoker Factory;
+    };
+
+    class FLifetimeHandler_CustomFactory : public FLifetimeHandler
+    {
+    public:
+        FLifetimeHandler_CustomFactory(TFunction<UObject* ()> Factory)
+            : Factory(Factory)
+        {
+        }
+
+        UObject* Get(FRegistrationStorage& Resolver) override { return Factory(); }
+        void AddReferencedObjects(FReferenceCollector& Collector) override {}
+
+    private:
+        TFunction<UObject* ()> Factory;
     };
 
     class FLifetimeHandler_Instance : public FLifetimeHandler
@@ -57,39 +72,39 @@ namespace UnrealDI_Impl
     class FLifetimeHandler_SingleInstance : public FLifetimeHandler
     {
     public:
-        FLifetimeHandler_SingleInstance(FInstanceFactoryResult&& Factory)
+        FLifetimeHandler_SingleInstance(FInstanceFactoryInvoker&& Factory)
             : Factory(MoveTemp(Factory))
         {
         }
 
-        UObject* Get(FRegistrationStorage& Resolver) override { return Instance ? Instance : (Instance = Factory.Function(Resolver)); }
+        UObject* Get(FRegistrationStorage& Resolver) override { return Instance ? Instance : (Instance = Factory.Invoke(Resolver)); }
         void AddReferencedObjects(FReferenceCollector& Collector) override
         {
             Collector.AddReferencedObject(Instance);
-            Collector.AddReferencedObject(Factory.BlueprintClass);
+            Collector.AddReferencedObject(Factory.EffectiveClass);
         }
 
     private:
         UObject* Instance = nullptr;
-        FInstanceFactoryResult Factory;
+        FInstanceFactoryInvoker Factory;
     };
 
     class FLifetimeHandler_WeakSingleInstance : public FLifetimeHandler
     {
     public:
-        FLifetimeHandler_WeakSingleInstance(FInstanceFactoryResult&& Factory)
+        FLifetimeHandler_WeakSingleInstance(FInstanceFactoryInvoker&& Factory)
             : Factory(MoveTemp(Factory))
         {
         }
 
-        UObject* Get(FRegistrationStorage& Resolver) override { return Instance.IsValid() ? Instance.Get() : (Instance = Factory.Function(Resolver)).Get(); }
+        UObject* Get(FRegistrationStorage& Resolver) override { return Instance.IsValid() ? Instance.Get() : (Instance = Factory.Invoke(Resolver)).Get(); }
         void AddReferencedObjects(FReferenceCollector& Collector) override
         {
-            Collector.AddReferencedObject(Factory.BlueprintClass);
+            Collector.AddReferencedObject(Factory.EffectiveClass);
         }
 
     private:
         TWeakObjectPtr<UObject> Instance = nullptr;
-        FInstanceFactoryResult Factory;
+        FInstanceFactoryInvoker Factory;
     };
 }

@@ -24,6 +24,15 @@ public:
      */
     static void ClearContainerForWorld(class UWorld* World);
 
+    /*
+     * Returns container of a given UWorld or nullptr if not found
+     */
+    static UObjectContainer* GetContainerForWorld(class UWorld* World)
+    {
+        check(World);
+        return ContainerMap.FindRef(World);
+    }
+
 protected:
     /*
      * Call this method from your subclass constructor.

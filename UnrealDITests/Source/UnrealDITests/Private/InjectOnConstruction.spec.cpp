@@ -35,6 +35,40 @@ END_DEFINE_SPEC(InjectOnConstructionSpec)
 
 void InjectOnConstructionSpec::Define()
 {
+    It("Should Set Container for World", [this]()
+    {
+        FTempWorldHelper Helper;
+
+        FObjectContainerBuilder Builder;
+        UObjectContainer* Container = Builder.Build(Helper.World);
+
+        FInjectOnConstruction::SetContainerForWorld(Helper.World, Container);
+        
+        TestEqual("Associated container", FInjectOnConstruction::GetContainerForWorld(Helper.World), Container);
+
+        FInjectOnConstruction::ClearContainerForWorld(Helper.World);
+    });
+
+    It("Should Clear Container for World", [this]()
+    {
+        FTempWorldHelper Helper;
+
+        FObjectContainerBuilder Builder;
+        UObjectContainer* Container = Builder.Build(Helper.World);
+
+        FInjectOnConstruction::SetContainerForWorld(Helper.World, Container);
+        FInjectOnConstruction::ClearContainerForWorld(Helper.World);
+
+        TestNull("Associated container", FInjectOnConstruction::GetContainerForWorld(Helper.World));
+    });
+
+    It("Should Return nullptr Container for Unknown World", [this]()
+    {
+        FTempWorldHelper Helper;
+
+        TestNull("Associated container", FInjectOnConstruction::GetContainerForWorld(Helper.World));
+    });
+
     It("Should Inject Into UObject", [this]()
     {
         TestCommon<UInjectObject>([](UWorld* World)

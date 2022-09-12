@@ -24,7 +24,7 @@ TScriptInterface<IMyService> MyService = Container->Resolve<IMyService>();
 ```
 
 ## Supported versions
-UnrealDI was tested to work with Unreal versions 4.25 and 4.26. It should probably work with 4.27 as well, but no testing was done yet.
+UnrealDI was tested to work with Unreal versions 4.25, 4.26 and 4.27.
 
 ## Repository structure
 This repository contains two plugins:
@@ -32,7 +32,8 @@ This repository contains two plugins:
 * UnrealDITests — contains Tests for main plugin and not intended for shipping.
 
 ## Installation
-Copy UnrealDI folder into Plugins inside your project.
+1. Download [latest release](https://github.com/druhasu/UnrealDI/releases)
+2. Copy UnrealDI folder into Plugins inside your project.
 
 ## Acknowledgment
 UnrealDI is heavily inspired by [Hypodermic](https://github.com/ybainier/Hypodermic), but designed with Unreal Engine specifics in mind.

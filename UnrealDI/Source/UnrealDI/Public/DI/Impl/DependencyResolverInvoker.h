@@ -26,11 +26,13 @@ namespace UnrealDI_Impl
         template
         <
             typename TDependency, // type of dependency
-            typename = typename TEnableIf
+            typename TEnableIf
             <
                 !std::is_convertible< TParent, TDependency >::value &&
-                TIsSupportedArgument< TDependency >::Value
-            >::Type
+                !TIsSame<TDependency, UObject*>::Value && // disallow cast to UObject* so TScriptInterface won't try to construct directly from this object
+                TIsSupportedArgument< TDependency >::Value,
+                bool
+            >::Type = true
         >
         operator TDependency()
         {

@@ -26,7 +26,8 @@ namespace UnrealDI_Impl
             typename T,
             typename = typename TEnableIf
             <
-                !std::is_convertible< TParent, T >::value&&
+                !std::is_convertible< TParent, T >::value &&
+                !TIsSame< T, UObject* >::Value && // disallow cast to UObject* so TScriptInterface won't try to construct directly from this object
                 TIsSupportedArgument< T >::Value
             >::Type
         >

@@ -21,7 +21,7 @@ public:
 
     T operator*() const
     {
-        return T{ *Data };
+        return (T) (*Data);
     }
 
     TObjectsCollectionIterator& operator++()
@@ -150,7 +150,7 @@ public:
     TObjectsCollectionIterator<ReturnType> end()         { return TObjectsCollectionIterator<ReturnType>(Data + Count); }
     TObjectsCollectionIterator<ReturnType> end() const   { return TObjectsCollectionIterator<ReturnType>(Data + Count); }
 
-private:
+//private:
     template<typename U> friend class TObjectsCollection;
 
     // we are storing only pointers to UObjects, conversions to TScriptInterface are done during iteration

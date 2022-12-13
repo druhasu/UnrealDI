@@ -126,7 +126,7 @@ public:
 
         for (int32 i = 0; i < Count; ++i)
         {
-            OutArray.Emplace(ReturnType{ *(Data + i) });
+            OutArray.Emplace((ReturnType)( *(Data + i) ));
         }
     }
 
@@ -150,7 +150,7 @@ public:
     TObjectsCollectionIterator<ReturnType> end()         { return TObjectsCollectionIterator<ReturnType>(Data + Count); }
     TObjectsCollectionIterator<ReturnType> end() const   { return TObjectsCollectionIterator<ReturnType>(Data + Count); }
 
-//private:
+private:
     template<typename U> friend class TObjectsCollection;
 
     // we are storing only pointers to UObjects, conversions to TScriptInterface are done during iteration

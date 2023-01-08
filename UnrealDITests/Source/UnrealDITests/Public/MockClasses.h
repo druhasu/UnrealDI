@@ -33,6 +33,24 @@ public:
     UMockReader* Instance;
 };
 
+/* Requests instance of Concrete type via TObjectPtr */
+UCLASS()
+class UNREALDITESTS_API UNeedObjectPtrInstance : public UObject
+{
+    GENERATED_BODY()
+public:
+
+    // we cannot wrap whole class inside #if, so wrap only internals
+#if ENGINE_MAJOR_VERSION >= 5
+    void InitDependencies(TObjectPtr<UMockReader> ReaderConcrete)
+    {
+        Instance = ReaderConcrete;
+    }
+
+    TObjectPtr<UMockReader> Instance;
+#endif
+};
+
 /* Requests instance of Interface type */
 UCLASS()
 class UNREALDITESTS_API UNeedInterfaceInstance : public UObject

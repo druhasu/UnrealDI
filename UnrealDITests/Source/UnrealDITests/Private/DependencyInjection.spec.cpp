@@ -34,6 +34,18 @@ void DependenciesInjectionSpec::Define()
         TestNotNull("Dependency not injected", Resolved->Instance);
     });
 
+#if ENGINE_MAJOR_VERSION >= 5
+    
+    It("Should Inject Concrete Type via TObjectPtr", [this]()
+    {
+        auto Resolved = RegisterAndResolve<UNeedObjectPtrInstance>();
+
+        TestNotNull("Resolve returned nullptr", Resolved);
+        TestNotNull("Dependency not injected", Resolved->Instance.Get());
+    });
+
+#endif
+
     It("Should Inject Interface", [this]()
     {
         auto Resolved = RegisterAndResolve<UNeedInterfaceInstance>();

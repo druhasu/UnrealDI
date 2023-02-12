@@ -32,7 +32,7 @@ namespace UnrealDI_Impl
 
         TSharedRef<FLifetimeHandler> CreateLifetimeHandler() const override
         {
-            return MakeShared<UnrealDI_Impl::FLifetimeHandler_Transient>(FInstanceFactoryInvoker{ &ThisType::GetDefaultInstance, nullptr });
+            return MakeShared<UnrealDI_Impl::FLifetimeHandler_Transient>(FInstanceFactoryInvoker{ &ThisType::GetDefaultInstance, FSoftObjectPtr() });
         }
 
     private:

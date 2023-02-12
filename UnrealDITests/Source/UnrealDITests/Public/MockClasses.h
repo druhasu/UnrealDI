@@ -8,7 +8,7 @@
 #include "MockClasses.generated.h"
 
 /* Implements IReader interface */
-UCLASS()
+UCLASS(Blueprintable)
 class UNREALDITESTS_API UMockReader : public UObject, public IReader
 {
     GENERATED_BODY()

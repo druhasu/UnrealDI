@@ -39,7 +39,7 @@ namespace UnrealDI_Impl
 
         TRegistrationConfigurator_ForType()
             : FRegistrationConfiguratorBase(TObject::StaticClass())
-            , EffectiveClass(TObject::StaticClass())
+            , EffectiveClassPtr(TObject::StaticClass())
         {
             LifetimeHandlerFactory = &ThisType::CreateDefaultLifetimeHandler;
         }
@@ -59,7 +59,7 @@ namespace UnrealDI_Impl
 
         FInstanceFactoryInvoker GetFactory() const
         {
-            return { &TInstanceFactory<TObject>::CreateInstance, EffectiveClass };
+            return { &TInstanceFactory<TObject>::CreateInstance, EffectiveClassPtr };
         }
 
         static TSharedRef<FLifetimeHandler> CreateDefaultLifetimeHandler(const ThisType* This)
@@ -67,7 +67,7 @@ namespace UnrealDI_Impl
             return MakeShared<UnrealDI_Impl::FLifetimeHandler_Transient>(This->GetFactory());
         }
 
-        UClass* EffectiveClass;
+        FSoftObjectPtr EffectiveClassPtr;
         FLifetimeHandlerFactory LifetimeHandlerFactory;
     };
 

@@ -27,10 +27,7 @@ namespace UnrealDI_Impl
         }
 
         UObject* Get(FRegistrationStorage& Resolver) override { return Factory.Invoke(Resolver); }
-        void AddReferencedObjects(FReferenceCollector& Collector) override
-        {
-            Collector.AddReferencedObject(Factory.EffectiveClass);
-        }
+        void AddReferencedObjects(FReferenceCollector& Collector) override {}
 
     private:
         FInstanceFactoryInvoker Factory;
@@ -81,7 +78,6 @@ namespace UnrealDI_Impl
         void AddReferencedObjects(FReferenceCollector& Collector) override
         {
             Collector.AddReferencedObject(Instance);
-            Collector.AddReferencedObject(Factory.EffectiveClass);
         }
 
     private:
@@ -98,10 +94,7 @@ namespace UnrealDI_Impl
         }
 
         UObject* Get(FRegistrationStorage& Resolver) override { return Instance.IsValid() ? Instance.Get() : (Instance = Factory.Invoke(Resolver)).Get(); }
-        void AddReferencedObjects(FReferenceCollector& Collector) override
-        {
-            Collector.AddReferencedObject(Factory.EffectiveClass);
-        }
+        void AddReferencedObjects(FReferenceCollector& Collector) override {}
 
     private:
         TWeakObjectPtr<UObject> Instance = nullptr;

@@ -105,6 +105,39 @@ void ObjectContainerBuilderSpec::Define()
             TestTrue("UMockReader not registered", Container->IsRegistered<UMockReader>());
             TestTrue("IReader not registered", Container->IsRegistered<IReader>());
         });
+
+        It("Should Register Type From Blueprint By Class", [this]
+        {
+            TSoftClassPtr<UMockReader> SoftClassPtr(FSoftObjectPath(TEXT("/UnrealDITests/BP_MockReader.BP_MockReader_C")));
+            TSubclassOf<UMockReader> ClassPtr = SoftClassPtr.LoadSynchronous();
+
+            FObjectContainerBuilder Builder;
+            Builder.RegisterType<UMockReader>().FromBlueprint(ClassPtr);
+
+            UObjectContainer* Container = Builder.Build();
+
+            TestNotNull("Container is nullptr", Container);
+            TestTrue("UMockReader not registered", Container->IsRegistered<UMockReader>());
+
+            UMockReader* Reader = Container->Resolve<UMockReader>();
+            TestNotNull("Blueprint Class", Cast<UBlueprintGeneratedClass>(Reader->GetClass()));
+        });
+
+        It("Should Register Type From Blueprint By Path", [this]
+        {
+            TSoftClassPtr<UMockReader> SoftClassPtr(FSoftObjectPath(TEXT("/UnrealDITests/BP_MockReader.BP_MockReader_C")));
+
+            FObjectContainerBuilder Builder;
+            Builder.RegisterType<UMockReader>().FromBlueprint(SoftClassPtr);
+
+            UObjectContainer* Container = Builder.Build();
+
+            TestNotNull("Container is nullptr", Container);
+            TestTrue("UMockReader not registered", Container->IsRegistered<UMockReader>());
+
+            UMockReader* Reader = Container->Resolve<UMockReader>();
+            TestNotNull("Blueprint Class", Cast<UBlueprintGeneratedClass>(Reader->GetClass()));
+        });
     });
 
     Describe("Register Instance", [this]()

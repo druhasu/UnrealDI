@@ -3,6 +3,7 @@
 #pragma once
 
 #include "Templates/IsInvocable.h"
+#include <type_traits>
 
 namespace UnrealDI_Impl
 {
@@ -27,6 +28,6 @@ namespace UnrealDI_Impl
         template<typename U> static decltype(&U::InitDependencies) Test(U*);
         template<typename U> static char Test(...);
 
-        static const bool Value = TIsSame< char, decltype(Test<T>(nullptr)) >::Value;
+        static const bool Value = std::is_same< char, decltype(Test<T>(nullptr)) >::value;
     };
 }

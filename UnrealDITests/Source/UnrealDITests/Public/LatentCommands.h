@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "Engine/Engine.h"
 #include "Tests/AutomationCommon.h"
 
 class FRunGC : public IAutomationLatentCommand

@@ -4,6 +4,7 @@
 
 #include "DI/Impl/IsUInterface.h"
 #include "DI/Impl/StaticClass.h"
+#include "UObject/ScriptInterface.h"
 
 namespace UnrealDI_Impl
 {

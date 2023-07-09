@@ -6,6 +6,7 @@
 #include "HAL/UnrealMemory.h"
 #include "DI/Impl/IsUInterface.h"
 #include "DI/Impl/StaticClass.h"
+#include "UObject/ScriptInterface.h"
 
 /*
  * Iterator for TObjectsCollection

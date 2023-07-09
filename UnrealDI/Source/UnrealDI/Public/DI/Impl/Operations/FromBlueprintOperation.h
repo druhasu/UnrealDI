@@ -3,6 +3,7 @@
 #pragma once
 
 #include "UObject/Class.h"
+#include "Templates/SubclassOf.h"
 
 namespace UnrealDI_Impl
 {

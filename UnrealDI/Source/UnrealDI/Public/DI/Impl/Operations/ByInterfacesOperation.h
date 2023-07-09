@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include "UObject/Class.h"
 #include "Templates/UnrealTypeTraits.h"
 
 namespace UnrealDI_Impl

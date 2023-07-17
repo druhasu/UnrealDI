@@ -8,6 +8,7 @@
 #include "DI/Impl/RegistrationConfigurator_ForInstance.h"
 #include "DI/Impl/RegistrationConfigurator_ForFactory.h"
 #include "DI/Impl/RegistrationConfigurator_ForCDO.h"
+#include "DI/Impl/InstanceInjector.h"
 
 class UObject;
 class UObjectContainer;
@@ -62,6 +63,15 @@ public:
         return AddConfigurator< UnrealDI_Impl::TRegistrationConfigurator_ForCDO< TObject > >();
     }
 
+    /*
+     * Adds registration for type TObject to be accessible via IInjector interface
+     */
+    template <typename TObject, TEMPLATE_REQUIRES(TIsDerivedFrom<TObject, UObject>::Value)>
+    void RegisterInjector()
+    {
+        Injectors.Add(TObject::StaticClass(), &UnrealDI_Impl::TInstanceInjector<TObject>::Invoke);
+    }
+
     /* 
      * Builds a container from all registered types.
      * Outer is used to access current UWorld. If you are creating application-wide container use UGameInstance as an Outer.
@@ -86,4 +96,5 @@ private:
     void AddRegistrationsToContainer(UObjectContainer* Container);
 
     TArray<TSharedRef<UnrealDI_Impl::FRegistrationConfiguratorBase>> Registrations;
+    TMap<UClass*, UnrealDI_Impl::FInstanceInjectorFunction> Injectors;
 };

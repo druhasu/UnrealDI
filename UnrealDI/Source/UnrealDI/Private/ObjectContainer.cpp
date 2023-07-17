@@ -23,7 +23,45 @@ TObjectsCollection<UObject> UObjectContainer::ResolveAll(UClass* Type)
 
 bool UObjectContainer::IsRegistered(UClass* Type)
 {
-    return Registrations.Find(Type) != nullptr;
+    if (Registrations.Contains(Type))
+    {
+        return true;
+    }
+    else if (ParentContainer)
+    {
+        return ParentContainer->IsRegistered(Type);
+    }
+
+    return false;
+}
+
+bool UObjectContainer::Inject(UObject* Object)
+{
+    check(Object);
+
+    UClass* Class = Object->GetClass();
+
+    // find native parent, because we store only those in Registrations
+    while (!Class->IsNative())
+    {
+        Class = Class->GetSuperClass();
+    }
+
+    // try find an injector for a class
+    UnrealDI_Impl::FInstanceInjectorFunction Injector = nullptr;
+    while (!Injector && Class)
+    {
+        Injector = FindInjector(Class);
+        Class = Class->GetSuperClass();
+    }
+
+    if (Injector)
+    {
+        Injector(*Object, *this);
+        return true;
+    }
+
+    return false;
 }
 
 void UObjectContainer::AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector)

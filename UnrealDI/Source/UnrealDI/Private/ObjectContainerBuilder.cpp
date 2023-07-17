@@ -46,6 +46,12 @@ void FObjectContainerBuilder::AddRegistrationsToContainer(UObjectContainer* Cont
     // register container itself as IResolver
     Container->AddRegistration(IResolver::UClassType::StaticClass(), MakeShared<UnrealDI_Impl::FLifetimeHandler_Instance>(Container));
 
+    // register container itself as IInjector
+    Container->AddRegistration(IInjector::UClassType::StaticClass(), MakeShared<UnrealDI_Impl::FLifetimeHandler_Instance>(Container));
+
+    // move registered injector functions to Container
+    Container->Injectors = MoveTemp(Injectors);
+
     // resolve all classes that are marked with bAutoCreate
     for (auto& Registration : Registrations)
     {

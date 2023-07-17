@@ -79,6 +79,25 @@ FRegistrationStorage::FResolver* FRegistrationStorage::FindResolver(UClass* Type
     }
 }
 
+UnrealDI_Impl::FInstanceInjectorFunction FRegistrationStorage::FindInjector(UClass* Type)
+{
+    UnrealDI_Impl::FInstanceInjectorFunction* Injector = Injectors.Find(Type);
+
+    if (Injector)
+    {
+        return *Injector;
+    }
+    else if (ParentContainer)
+    {
+        return ParentContainer->FindInjector(Type);
+    }
+    else
+    {
+        // will be checked later in call site
+        return nullptr;
+    }
+}
+
 void FRegistrationStorage::AppendObjectsCollection(UClass* Type, UObject**& Data)
 {
     if (ParentContainer)

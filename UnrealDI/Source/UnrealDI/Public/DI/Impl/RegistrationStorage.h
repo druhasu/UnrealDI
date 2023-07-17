@@ -7,6 +7,7 @@
 #include "Templates/SharedPointer.h"
 #include "UObject/Object.h"
 #include "DI/ObjectsCollection.h"
+#include "DI/Impl/InstanceInjector.h"
 
 class UObjectContainer;
 
@@ -55,6 +56,7 @@ namespace UnrealDI_Impl
         void AddRegistration(UClass* Interface, const TSharedRef< FLifetimeHandler >& Lifetime);
 
         FResolver* FindResolver(UClass* Type);
+        UnrealDI_Impl::FInstanceInjectorFunction FindInjector(UClass* Type);
         void AppendObjectsCollection(UClass* Type, UObject**& Data);
 
         UObject* Owner = nullptr;
@@ -62,6 +64,7 @@ namespace UnrealDI_Impl
         UObjectContainer* ParentContainer = nullptr;
 
         TMap<UClass*, TArray<FResolver>> Registrations;
+        TMap<UClass*, UnrealDI_Impl::FInstanceInjectorFunction> Injectors;
     };
 }
 

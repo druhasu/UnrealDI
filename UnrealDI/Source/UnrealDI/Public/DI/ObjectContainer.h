@@ -3,7 +3,7 @@
 #pragma once
 
 #include "IResolver.h"
-//#include "DI/ObjectsCollection.h"
+#include "IInjector.h"
 #include "DI/Impl/RegistrationStorage.h"
 #include "ObjectContainer.generated.h"
 
@@ -13,7 +13,7 @@ template <typename T> class TObjectsCollection;
 using FRegistrationStorageType = UnrealDI_Impl::FRegistrationStorage;
 
 UCLASS()
-class UNREALDI_API UObjectContainer : public UObject, public IResolver, public FRegistrationStorageType
+class UNREALDI_API UObjectContainer : public UObject, public IResolver, public IInjector, public FRegistrationStorageType
 {
     GENERATED_BODY()
 
@@ -27,6 +27,10 @@ public:
     using IResolver::ResolveAll;
     using IResolver::IsRegistered;
     // ~End IResolver interface
+
+    // ~Begin IInjector interface
+    bool Inject(UObject* Object) override;
+    // ~End IInjector interface
 
 private:
     friend class FObjectContainerBuilder;

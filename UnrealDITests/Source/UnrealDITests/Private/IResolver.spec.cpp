@@ -10,14 +10,13 @@
 #include "LatentCommands.h"
 
 BEGIN_DEFINE_SPEC(IResolverSpec, "UnrealDI.IResolver", EAutomationTestFlags::ClientContext | EAutomationTestFlags::EditorContext | EAutomationTestFlags::ServerContext | EAutomationTestFlags::EngineFilter)
-END_DEFINE_SPEC(IResolverSpec)
-
 UObjectContainer* BuildContainer()
 {
     FObjectContainerBuilder Builder;
     Builder.RegisterType<UMockReader>().As<IReader>().AsSelf();
     return Builder.Build();
 }
+END_DEFINE_SPEC(IResolverSpec)
 
 void IResolverSpec::Define()
 {

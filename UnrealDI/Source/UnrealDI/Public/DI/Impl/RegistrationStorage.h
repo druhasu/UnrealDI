@@ -7,7 +7,6 @@
 #include "Templates/SharedPointer.h"
 #include "UObject/Object.h"
 #include "DI/ObjectsCollection.h"
-#include "DI/Impl/InstanceInjector.h"
 
 class UObjectContainer;
 
@@ -19,6 +18,11 @@ namespace UnrealDI_Impl
     class FRegistrationConfiguratorBase;
     template <typename T> struct TDependencyResolver;
     template <typename T> class TRegistrationConfigurator_ForType;
+
+    class FRegistrationStorage;
+
+    /* Pointer to function that injects dependencies into provided object */
+    using FInstanceInjectorFunction = void(*)(UObject&, FRegistrationStorage&);
 
     class UNREALDI_API FRegistrationStorage
     {

@@ -8,9 +8,6 @@ namespace UnrealDI_Impl
 {
     class FRegistrationStorage;
 
-    /* Pointer to function that injects dependencies into provided object */
-    using FInstanceInjectorFunction = void(*)(UObject&, FRegistrationStorage&);
-
     /* Generator class for injector functions */
     template<typename TObject>
     struct TInstanceInjector

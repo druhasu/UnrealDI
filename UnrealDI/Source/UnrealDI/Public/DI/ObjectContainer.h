@@ -29,7 +29,8 @@ public:
     // ~End IResolver interface
 
     // ~Begin IInjector interface
-    bool Inject(UObject* Object) override;
+    bool Inject(UObject* Object) const override;
+    bool CanInject(UClass* Class) const override;
     // ~End IInjector interface
 
 private:

@@ -3,6 +3,7 @@
 #include "DI/ObjectContainer.h"
 #include "DI/Impl/Lifetimes.h"
 #include "DI/Impl/RegistrationConfiguratorBase.h"
+#include "DI/Impl/DependenciesRegistry.h"
 #include "DI/ObjectsCollection.h"
 
 
@@ -35,33 +36,27 @@ bool UObjectContainer::IsRegistered(UClass* Type)
     return false;
 }
 
-bool UObjectContainer::Inject(UObject* Object)
+bool UObjectContainer::Inject(UObject* Object) const
 {
     check(Object);
 
     UClass* Class = Object->GetClass();
 
-    // find native parent, because we store only those in Registrations
-    while (!Class->IsNative())
+    auto InitFunction = UnrealDI_Impl::FDependenciesRegistry::FindInitFunction(Class);
+    if (InitFunction != nullptr)
     {
-        Class = Class->GetSuperClass();
-    }
-
-    // try find an injector for a class
-    UnrealDI_Impl::FInstanceInjectorFunction Injector = nullptr;
-    while (!Injector && Class)
-    {
-        Injector = FindInjector(Class);
-        Class = Class->GetSuperClass();
-    }
-
-    if (Injector)
-    {
-        Injector(*Object, *this);
+        InitFunction(*Object, *const_cast<UObjectContainer*>(this));
         return true;
     }
 
     return false;
+}
+
+bool UObjectContainer::CanInject(UClass* Class) const
+{
+    check(Class);
+
+    return UnrealDI_Impl::FDependenciesRegistry::FindInitFunction(Class) != nullptr;
 }
 
 void UObjectContainer::AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector)

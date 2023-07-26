@@ -8,7 +8,7 @@
 #include "DI/Impl/RegistrationConfigurator_ForInstance.h"
 #include "DI/Impl/RegistrationConfigurator_ForFactory.h"
 #include "DI/Impl/RegistrationConfigurator_ForCDO.h"
-#include "DI/Impl/InstanceInjector.h"
+#include "DI/ExposeDependencies.h"
 
 class UObject;
 class UObjectContainer;
@@ -32,6 +32,7 @@ public:
     template<typename TObject>
     UnrealDI_Impl::TRegistrationConfigurator_ForType<TObject>& RegisterType()
     {
+        EXPOSE_DEPENDENCIES(TObject);
         return AddConfigurator< UnrealDI_Impl::TRegistrationConfigurator_ForType< TObject > >();
     }
 
@@ -41,6 +42,7 @@ public:
     template<typename TObject>
     UnrealDI_Impl::TRegistrationConfigurator_ForInstance<TObject>& RegisterInstance(TObject* Instance)
     {
+        EXPOSE_DEPENDENCIES(TObject);
         return AddConfigurator< UnrealDI_Impl::TRegistrationConfigurator_ForInstance< TObject > >(Instance);
     }
 
@@ -51,6 +53,7 @@ public:
     template<typename TObject>
     UnrealDI_Impl::TRegistrationConfigurator_ForFactory<TObject>& RegisterFactory(TFunction< TObject* () > Factory)
     {
+        EXPOSE_DEPENDENCIES(TObject);
         return AddConfigurator< UnrealDI_Impl::TRegistrationConfigurator_ForFactory< TObject > >(Factory);
     }
 
@@ -60,6 +63,7 @@ public:
     template<typename TObject>
     UnrealDI_Impl::TRegistrationConfigurator_ForCDO<TObject>& RegisterDefault()
     {
+        EXPOSE_DEPENDENCIES(TObject);
         return AddConfigurator< UnrealDI_Impl::TRegistrationConfigurator_ForCDO< TObject > >();
     }
 
@@ -69,7 +73,7 @@ public:
     template <typename TObject, TEMPLATE_REQUIRES(TIsDerivedFrom<TObject, UObject>::Value)>
     void RegisterInjector()
     {
-        Injectors.Add(TObject::StaticClass(), &UnrealDI_Impl::TInstanceInjector<TObject>::Invoke);
+        EXPOSE_DEPENDENCIES(TObject);
     }
 
     /* 
@@ -96,5 +100,4 @@ private:
     void AddRegistrationsToContainer(UObjectContainer* Container);
 
     TArray<TSharedRef<UnrealDI_Impl::FRegistrationConfiguratorBase>> Registrations;
-    TMap<UClass*, UnrealDI_Impl::FInstanceInjectorFunction> Injectors;
 };

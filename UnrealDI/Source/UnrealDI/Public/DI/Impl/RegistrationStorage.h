@@ -19,11 +19,6 @@ namespace UnrealDI_Impl
     template <typename T> struct TDependencyResolver;
     template <typename T> class TRegistrationConfigurator_ForType;
 
-    class FRegistrationStorage;
-
-    /* Pointer to function that injects dependencies into provided object */
-    using FInstanceInjectorFunction = void(*)(UObject&, FRegistrationStorage&);
-
     class UNREALDI_API FRegistrationStorage
     {
     public:
@@ -60,7 +55,6 @@ namespace UnrealDI_Impl
         void AddRegistration(UClass* Interface, const TSharedRef< FLifetimeHandler >& Lifetime);
 
         FResolver* FindResolver(UClass* Type);
-        UnrealDI_Impl::FInstanceInjectorFunction FindInjector(UClass* Type);
         void AppendObjectsCollection(UClass* Type, UObject**& Data);
 
         UObject* Owner = nullptr;
@@ -68,7 +62,6 @@ namespace UnrealDI_Impl
         UObjectContainer* ParentContainer = nullptr;
 
         TMap<UClass*, TArray<FResolver>> Registrations;
-        TMap<UClass*, UnrealDI_Impl::FInstanceInjectorFunction> Injectors;
     };
 }
 

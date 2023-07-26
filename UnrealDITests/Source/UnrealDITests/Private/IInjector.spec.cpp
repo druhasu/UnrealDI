@@ -29,9 +29,12 @@ void IInjectorSpec::Define()
     It("Should Inject into Exact Type", [this]
     {
         UTestInjection_Base* TargetObject = NewObject<UTestInjection_Base>();
+        auto Injector = CreateInjector();
 
-        bool bResult = CreateInjector()->Inject(TargetObject);
+        bool bCanInject = Injector->CanInject(TargetObject->GetClass());
+        bool bResult = Injector->Inject(TargetObject);
 
+        TestTrue("CanInject", bCanInject);
         TestTrue("Was injected", bResult);
         TestNotNull("Injected instance", TargetObject->Instance.GetObject());
     });
@@ -39,9 +42,25 @@ void IInjectorSpec::Define()
     It("Should Inject into Derived Type", [this]
     {
         UTestInjection_Derived* TargetObject = NewObject<UTestInjection_Derived>();
+        auto Injector = CreateInjector();
 
-        bool bResult = CreateInjector()->Inject(TargetObject);
+        bool bCanInject = Injector->CanInject(TargetObject->GetClass());
+        bool bResult = Injector->Inject(TargetObject);
 
+        TestTrue("CanInject", bCanInject);
+        TestTrue("Was injected", bResult);
+        TestNotNull("Injected instance", TargetObject->Instance.GetObject());
+    });
+
+    It("Should Inject into Static Exposed Type", [this]
+    {
+        UTestInjection_Exposed* TargetObject = NewObject<UTestInjection_Exposed>();
+        auto Injector = CreateInjector();
+
+        bool bCanInject = Injector->CanInject(TargetObject->GetClass());
+        bool bResult = Injector->Inject(TargetObject);
+
+        TestTrue("CanInject", bCanInject);
         TestTrue("Was injected", bResult);
         TestNotNull("Injected instance", TargetObject->Instance.GetObject());
     });
@@ -50,20 +69,26 @@ void IInjectorSpec::Define()
     {
         TSoftClassPtr<UTestInjection_Base> ClassPath(FSoftObjectPath("/UnrealDITests/BP_TestInjection_Derived.BP_TestInjection_Derived_C"));
         UTestInjection_Base* TargetObject = NewObject<UTestInjection_Base>(GetTransientPackage(), ClassPath.LoadSynchronous());
+        auto Injector = CreateInjector();
 
-        bool bResult = CreateInjector()->Inject(TargetObject);
+        bool bCanInject = Injector->CanInject(TargetObject->GetClass());
+        bool bResult = Injector->Inject(TargetObject);
 
+        TestTrue("CanInject", bCanInject);
         TestTrue("Was injected", bResult);
         TestNotNull("Injected instance", TargetObject->Instance.GetObject());
     });
 
     It("Should Return false When Not Injected", [this]
     {
-        UNeedObjectInstance* TargetObject = NewObject<UNeedObjectInstance>();
+        UTestInjection_Unregistered* TargetObject = NewObject<UTestInjection_Unregistered>();
+        auto Injector = CreateInjector();
 
-        bool bResult = CreateInjector()->Inject(TargetObject);
+        bool bCanInject = Injector->CanInject(TargetObject->GetClass());
+        bool bResult = Injector->Inject(TargetObject);
 
+        TestFalse("CanInject", bCanInject);
         TestFalse("Was injected", bResult);
-        TestNull("Injected instance", TargetObject->Instance);
+        TestNull("Injected instance", TargetObject->Instance.GetObject());
     });
 }

@@ -24,7 +24,7 @@ TScriptInterface<IMyService> MyService = Container->Resolve<IMyService>();
 ```
 
 ## Supported versions
-UnrealDI was tested to work with Unreal versions 4.25, 4.26 and 4.27.
+UnrealDI was tested to work with Unreal versions 4.25, 4.26, 4.27, 5.0, 5.1, 5.2.
 
 ## Repository structure
 This repository contains two plugins:

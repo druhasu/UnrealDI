@@ -3,6 +3,7 @@
 #pragma once
 
 #include "DI/Impl/IsUInterface.h"
+#include "UObject/ObjectPtr.h"
 #include "Templates/UnrealTypeTraits.h"
 
 template <typename T> class TFactory;
@@ -20,6 +21,10 @@ namespace UnrealDI_Impl
         // support T* - single instance of UObject
         template <typename T>
         struct TIsSupportedArgument< T* > : TIsDerivedFrom< T, UObject > {};
+
+        // support TObjectPtr<T> - single instance of UObject
+        template <typename T>
+        struct TIsSupportedArgument< TObjectPtr<T> > : TIsDerivedFrom< T, UObject > {};
 
         // support TScriptInterface< T > - single instance of UInterface
         template <typename T>

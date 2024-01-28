@@ -7,6 +7,7 @@
 #include "DI/Impl/RegistrationStorage.h"
 #include "DI/Impl/StaticClass.h"
 #include "UObject/ScriptInterface.h"
+#include "UObject/ObjectPtr.h"
 
 namespace UnrealDI_Impl
 {
@@ -18,6 +19,18 @@ namespace UnrealDI_Impl
     struct TDependencyResolver< T* >
     {
         using ReturnType = T*;
+
+        static ReturnType Resolve(FRegistrationStorage& Resolver)
+        {
+            // call ResolveImpl here to leverage auto-registration of concrete types
+            return Cast<T>(Resolver.ResolveImpl<T>());
+        }
+    };
+
+    template <typename T>
+    struct TDependencyResolver< TObjectPtr<T> >
+    {
+        using ReturnType = TObjectPtr<T>;
 
         static ReturnType Resolve(FRegistrationStorage& Resolver)
         {

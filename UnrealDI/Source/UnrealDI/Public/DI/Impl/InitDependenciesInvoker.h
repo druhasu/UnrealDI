@@ -58,5 +58,5 @@ void UnrealDI_Impl::TInitDependenciesInvoker<T, UnrealDI_Impl::TArgumentPack<>>:
 template <typename T, typename... TArgs>
 void UnrealDI_Impl::TInitDependenciesInvoker<T, UnrealDI_Impl::TArgumentPack<TArgs...>>::Invoke(T* Self, FRegistrationStorage& Resolver)
 {
-    Self->InitDependencies(TDependencyResolverInvoker<typename TArgs::Type>(Resolver)...);
+    Self->InitDependencies(TDependencyResolverInvoker<TArgs>(Resolver)...);
 }

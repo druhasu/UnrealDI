@@ -6,53 +6,52 @@
 #include "DI/Impl/IsSupportedArgument.h"
 #include "DI/Impl/ArgumentPack.h"
 
-#define IOC_MAX_DEPENDENCIES 20
-
 namespace UnrealDI_Impl
 {
 
-    struct FConstructorTypologyNotSupported
-    {
-        using Type = FConstructorTypologyNotSupported;
-    };
-
-    template <typename TParent>
-    struct TAnyArgument
-    {
-        typedef TParent Type;
-
-        template
-        <
-            typename T,
-            typename = typename TEnableIf
-            <
-                !std::is_convertible< TParent, T >::value &&
-                !TIsSame< T, UObject* >::Value && // disallow cast to UObject* so TScriptInterface won't try to construct directly from this object
-                TIsSupportedArgument< T >::Value
-            >::Type
-        >
-        operator T()
-        {
-            // Nothing to do here, we just need a conversion operator to evaluate THasInitMethod
-        }
-    };
-
     namespace Details
     {
-        template <typename T, int>
-        struct TWrapAndGet : TAnyArgument< T > {};
 
-        template <typename, typename, typename = void>
+        template <typename T, typename... TArgs>
+        struct TSupportChecker
+        {
+            static constexpr bool Supported = UnrealDI_Impl::TIsSupportedArgument<T>::Value && TSupportChecker<TArgs...>::Supported;
+        };
+
+        template <typename T>
+        struct TSupportChecker<T>
+        {
+            static constexpr bool Supported = UnrealDI_Impl::TIsSupportedArgument<T>::Value;
+        };
+
+        template <>
+        struct TSupportChecker< TArgumentPack<> >
+        {
+            static constexpr bool Supported = true;
+        };
+
+        template <typename... TArgs>
+        struct TSupportChecker< TArgumentPack<TArgs...> >
+        {
+            static constexpr bool Supported = TSupportChecker<TArgs...>::Supported;
+        };
+
+        template <typename T>
+        using TInitDependenciesArgs = decltype(GetFunctionArgumentPack(&T::InitDependencies));
+
+        template <typename T, typename = void>
         struct TInitMethodTypologyDeducer;
 
+        struct FInitDependenciesSignatureNotSupported
+        {
+            using Type = FInitDependenciesSignatureNotSupported;
+        };
 
-        // Initial recursion state
         template <typename T>
         struct TInitMethodTypologyDeducer
         <
             T,
-            TIntegerSequence< int >,
-            typename TEnableIf< TOr< THasInitDependencies< T >, THasNoInitDependencies< T > >::Value >::Type
+            typename TEnableIf<  THasNoInitDependencies< T >::Value >::Type
         > : TArgumentPack<>
         {};
 
@@ -60,67 +59,16 @@ namespace UnrealDI_Impl
         struct TInitMethodTypologyDeducer
         <
             T,
-            TIntegerSequence< int >,
-            typename TEnableIf< TAnd< TNot< THasInitDependencies< T > >, TNot< THasNoInitDependencies< T > > >::Value >::Type
-        > : TInitMethodTypologyDeducer< T, TMakeIntegerSequence< int, 1 > >::Type
+            typename TEnableIf< !THasNoInitDependencies< T >::Value &&  TSupportChecker< TInitDependenciesArgs<T> >::Supported >::Type
+        > : TInitDependenciesArgs< T >
         {};
 
-
-        // Common recursion state
-        template <typename T, int... NthArgument>
+        template <typename T>
         struct TInitMethodTypologyDeducer
         <
             T,
-            TIntegerSequence< int, NthArgument... >,
-            typename TEnableIf
-            <
-                (sizeof...(NthArgument) > 0) &&
-                (sizeof...(NthArgument) < IOC_MAX_DEPENDENCIES) &&
-                THasInitDependencies< T, TWrapAndGet< T, NthArgument >... >::Value
-            >::Type
-        > : TArgumentPack< TWrapAndGet< T, NthArgument >... >
-        {};
-
-        template <typename T, int... NthArgument>
-        struct TInitMethodTypologyDeducer
-        <
-            T,
-            TIntegerSequence< int, NthArgument... >,
-            typename TEnableIf
-            <
-                (sizeof...(NthArgument) > 0) &&
-                (sizeof...(NthArgument) < IOC_MAX_DEPENDENCIES) &&
-                !THasInitDependencies< T, TWrapAndGet< T, NthArgument >... >::Value
-            >::Type
-        > : TInitMethodTypologyDeducer< T, TMakeIntegerSequence< int, sizeof...(NthArgument) + 1 > >::Type
-        {};
-
-
-        // Last recursion state
-        template <typename T, int... NthArgument>
-        struct TInitMethodTypologyDeducer
-        <
-            T,
-            TIntegerSequence< int, NthArgument... >,
-            typename TEnableIf
-            <
-                (sizeof...(NthArgument) == IOC_MAX_DEPENDENCIES) &&
-                THasInitDependencies< T, TWrapAndGet< T, NthArgument >... >::Value
-            >::Type
-        > : TArgumentPack< TWrapAndGet< T, NthArgument >... >
-        {};
-
-        template <typename T, int... NthArgument>
-        struct TInitMethodTypologyDeducer
-        <
-            T,
-            TIntegerSequence< int, NthArgument... >,
-            typename TEnableIf
-            <
-                (sizeof...(NthArgument) == IOC_MAX_DEPENDENCIES) &&
-                !THasInitDependencies< T, TWrapAndGet< T, NthArgument >... >::Value
-            >::Type
-        > : FConstructorTypologyNotSupported
+            typename TEnableIf< !THasNoInitDependencies< T >::Value && !TSupportChecker< TInitDependenciesArgs<T> >::Supported >::Type
+        > : FInitDependenciesSignatureNotSupported
         {};
 
     }
@@ -130,6 +78,6 @@ namespace UnrealDI_Impl
      * In case of success this type will extend TArgumentPack with corresponding amount of template arguments
      */
     template <typename T>
-    using TInitMethodTypologyDeducer = typename Details::TInitMethodTypologyDeducer< T, TMakeIntegerSequence< int, 0 > >::Type;
+    using TInitMethodTypologyDeducer = typename Details::TInitMethodTypologyDeducer< T >::Type;
 
 }

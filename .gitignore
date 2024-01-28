@@ -2,3 +2,5 @@
 /UnrealDI/Intermediate
 /UnrealDITests/Binaries
 /UnrealDITests/Intermediate
+/UnrealDI/Source/UnrealDIUbt/obj
+/UnrealDI/Source/UnrealDIUbt/*.props

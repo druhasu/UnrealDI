@@ -4,6 +4,7 @@
 
 #include "Containers/Map.h"
 #include "DI/Impl/InstanceInjector.h"
+#include "DI/Impl/InstanceConstructor.h"
 
 class UObject;
 class UClass;
@@ -15,16 +16,18 @@ namespace UnrealDI_Impl
     class UNREALDI_API FDependenciesRegistry
     {
     public:
-        using FInitFunctionPtr = void (*)(UObject&, FRegistrationStorage&);
+        using FConstructFunctionPtr = UObject* (*)(UWorld* World, UObject* Outer, UClass* EffectiveClass);
+        using FInitFunctionPtr = void (*)(UObject& ConstructedObject, FRegistrationStorage& Container);
+        using FPostInitFunctionPtr = void (*)(UObject* ConstructedObject);
 
         template <typename T>
-        static uint8 ExposeDependencies()
+        static void ExposeDependencies()
         {
-            FUnprocessedEntry& Entry = UnprocessedEntries.Emplace_GetRef();
+            FUnprocessedEntry& Entry = GetUnprocessedEntries().Emplace_GetRef();
             Entry.ClassGetter = &T::StaticClass;
-            Entry.InitFunction = &UnrealDI_Impl::TInstanceInjector<T>::Invoke;
-
-            return 1;
+            Entry.ConstructFunction = &TInstanceConstructor<T>::Construct;
+            Entry.InitFunction = &TInstanceInjector<T>::Invoke;
+            Entry.PostInitFunction = &TInstanceConstructor<T>::PostInit;
         }
 
         static void ProcessPendingRegistrations();
@@ -37,10 +40,13 @@ namespace UnrealDI_Impl
         struct FUnprocessedEntry
         {
             FClassGetter ClassGetter;
+            FConstructFunctionPtr ConstructFunction;
             FInitFunctionPtr InitFunction;
+            FPostInitFunctionPtr PostInitFunction;
         };
 
+        static TArray<FUnprocessedEntry>& GetUnprocessedEntries();
+
         static TMap<UClass*, FInitFunctionPtr> InitFunctions;
-        static TArray<FUnprocessedEntry> UnprocessedEntries;
     };
 }

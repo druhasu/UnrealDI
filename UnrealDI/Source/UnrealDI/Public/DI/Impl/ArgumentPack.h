@@ -9,4 +9,16 @@ namespace UnrealDI_Impl
     {
         using Type = TArgumentPack;
     };
+
+    template <typename... TArgs>
+    TArgumentPack<TArgs...> GetFunctionArgumentPack(void (*)(TArgs...))
+    {
+        return TArgumentPack<TArgs...>();
+    }
+
+    template <typename T, typename... TArgs>
+    TArgumentPack<TArgs...> GetFunctionArgumentPack(void (T::*)(TArgs...))
+    {
+        return TArgumentPack<TArgs...>();
+    }
 }

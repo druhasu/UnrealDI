@@ -3,7 +3,6 @@
 #include "DI/Impl/DependenciesRegistry.h"
 
 TMap<UClass*, UnrealDI_Impl::FDependenciesRegistry::FInitFunctionPtr> UnrealDI_Impl::FDependenciesRegistry::InitFunctions;
-TArray<UnrealDI_Impl::FDependenciesRegistry::FUnprocessedEntry> UnrealDI_Impl::FDependenciesRegistry::UnprocessedEntries;
 
 void UnrealDI_Impl::FDependenciesRegistry::ProcessPendingRegistrations()
 {
@@ -13,14 +12,14 @@ void UnrealDI_Impl::FDependenciesRegistry::ProcessPendingRegistrations()
         return;
     }
 
-    if (UnprocessedEntries.Num() > 0)
+    if (GetUnprocessedEntries().Num() > 0)
     {
-        for (const FUnprocessedEntry& Entry : UnprocessedEntries)
+        for (const FUnprocessedEntry& Entry : GetUnprocessedEntries())
         {
             InitFunctions.Emplace(Entry.ClassGetter(), Entry.InitFunction);
         }
 
-        UnprocessedEntries.Empty();
+        GetUnprocessedEntries().Empty();
     }
 }
 
@@ -40,5 +39,11 @@ UnrealDI_Impl::FDependenciesRegistry::FInitFunctionPtr UnrealDI_Impl::FDependenc
         Class = Class->GetSuperClass();
     }
 
+    return Result;
+}
+
+TArray<UnrealDI_Impl::FDependenciesRegistry::FUnprocessedEntry>& UnrealDI_Impl::FDependenciesRegistry::GetUnprocessedEntries()
+{
+    static TArray<FUnprocessedEntry> Result;
     return Result;
 }

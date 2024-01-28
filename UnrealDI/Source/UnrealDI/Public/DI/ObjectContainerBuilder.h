@@ -8,7 +8,6 @@
 #include "DI/Impl/RegistrationConfigurator_ForInstance.h"
 #include "DI/Impl/RegistrationConfigurator_ForFactory.h"
 #include "DI/Impl/RegistrationConfigurator_ForCDO.h"
-#include "DI/ExposeDependencies.h"
 
 class UObject;
 class UObjectContainer;
@@ -32,7 +31,6 @@ public:
     template<typename TObject>
     UnrealDI_Impl::TRegistrationConfigurator_ForType<TObject>& RegisterType()
     {
-        EXPOSE_DEPENDENCIES(TObject);
         return AddConfigurator< UnrealDI_Impl::TRegistrationConfigurator_ForType< TObject > >();
     }
 
@@ -42,7 +40,6 @@ public:
     template<typename TObject>
     UnrealDI_Impl::TRegistrationConfigurator_ForInstance<TObject>& RegisterInstance(TObject* Instance)
     {
-        EXPOSE_DEPENDENCIES(TObject);
         return AddConfigurator< UnrealDI_Impl::TRegistrationConfigurator_ForInstance< TObject > >(Instance);
     }
 
@@ -53,7 +50,6 @@ public:
     template<typename TObject>
     UnrealDI_Impl::TRegistrationConfigurator_ForFactory<TObject>& RegisterFactory(TFunction< TObject* () > Factory)
     {
-        EXPOSE_DEPENDENCIES(TObject);
         return AddConfigurator< UnrealDI_Impl::TRegistrationConfigurator_ForFactory< TObject > >(Factory);
     }
 
@@ -63,17 +59,7 @@ public:
     template<typename TObject>
     UnrealDI_Impl::TRegistrationConfigurator_ForCDO<TObject>& RegisterDefault()
     {
-        EXPOSE_DEPENDENCIES(TObject);
         return AddConfigurator< UnrealDI_Impl::TRegistrationConfigurator_ForCDO< TObject > >();
-    }
-
-    /*
-     * Adds registration for type TObject to be accessible via IInjector interface
-     */
-    template <typename TObject, TEMPLATE_REQUIRES(TIsDerivedFrom<TObject, UObject>::Value)>
-    void RegisterInjector()
-    {
-        EXPOSE_DEPENDENCIES(TObject);
     }
 
     /* 

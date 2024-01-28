@@ -12,7 +12,6 @@ TScriptInterface<IInjector> CreateInjector()
 {
     FObjectContainerBuilder Builder;
     Builder.RegisterType<UMockReader>().As<IReader>().AsSelf();
-    Builder.RegisterInjector<UTestInjection_Base>();
     return Builder.Build()->Resolve<IInjector>();
 }
 END_DEFINE_SPEC(IInjectorSpec)
@@ -77,18 +76,5 @@ void IInjectorSpec::Define()
         TestTrue("CanInject", bCanInject);
         TestTrue("Was injected", bResult);
         TestNotNull("Injected instance", TargetObject->Instance.GetObject());
-    });
-
-    It("Should Return false When Not Injected", [this]
-    {
-        UTestInjection_Unregistered* TargetObject = NewObject<UTestInjection_Unregistered>();
-        auto Injector = CreateInjector();
-
-        bool bCanInject = Injector->CanInject(TargetObject->GetClass());
-        bool bResult = Injector->Inject(TargetObject);
-
-        TestFalse("CanInject", bCanInject);
-        TestFalse("Was injected", bResult);
-        TestNull("Injected instance", TargetObject->Instance.GetObject());
     });
 }

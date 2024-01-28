@@ -14,29 +14,30 @@ namespace UnrealDI_Impl
      * Invokes IResolverImpl with correct argument
      * Main purpose of this class is to provide conversion operator to be called with type of argument that InitDependencies requested
      */
-    template <typename TParent>
+    template <typename TDependency>
     struct TDependencyResolverInvoker
     {
+        using TResultType = typename TDecay<TDependency>::Type;
+
         TDependencyResolverInvoker(FRegistrationStorage& Resolver)
             : Resolver(Resolver)
         {
         }
 
         // this conversion operator is called when this object is casted to a parameter of InitDependencies method
-        template
+        /*template
         <
-            typename TDependency, // type of dependency
             typename TEnableIf
             <
-                !std::is_convertible< TParent, TDependency >::value &&
+                //!std::is_convertible< TParent, TDependency >::value &&
                 !TIsSame<TDependency, UObject*>::Value && // disallow cast to UObject* so TScriptInterface won't try to construct directly from this object
                 TIsSupportedArgument< TDependency >::Value,
                 bool
             >::Type = true
-        >
-        operator TDependency()
+        >*/
+        operator TResultType()
         {
-            return TDependencyResolver< TDependency >::Resolve(Resolver);
+            return TDependencyResolver< TResultType >::Resolve(Resolver);
         }
 
         FRegistrationStorage& Resolver;

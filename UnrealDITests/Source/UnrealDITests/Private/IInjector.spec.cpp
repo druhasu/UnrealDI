@@ -6,13 +6,12 @@
 #include "DI/ObjectContainer.h"
 
 #include "MockClasses_Injector.h"
+#include "BuildContainerHelper.h"
 
 BEGIN_DEFINE_SPEC(IInjectorSpec, "UnrealDI.IInjector", EAutomationTestFlags::ClientContext | EAutomationTestFlags::EditorContext | EAutomationTestFlags::ServerContext | EAutomationTestFlags::EngineFilter)
 TScriptInterface<IInjector> CreateInjector()
 {
-    FObjectContainerBuilder Builder;
-    Builder.RegisterType<UMockReader>().As<IReader>().AsSelf();
-    return Builder.Build()->Resolve<IInjector>();
+    return FBuildContainerHelper::Build()->Resolve<IInjector>();
 }
 END_DEFINE_SPEC(IInjectorSpec)
 

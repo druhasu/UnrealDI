@@ -10,6 +10,23 @@ namespace UnrealDI_Impl
 {
     template <typename T> struct TDependencyResolver;
     class FRegistrationStorage;
+
+    /*
+     * This struct allows us to use forward declared types in TFactory parameters.
+     * Full definition of that type is only required when actually calling operator()
+     */
+    struct FFactoryCallProxy
+    {
+        /* For UObject */
+        template <typename T>
+        static typename TEnableIf< TIsDerivedFrom< T, UObject >::Value, T* >::Type
+            Get(FRegistrationStorage* Resolver);
+
+        /* For TScriptInterface */
+        template <typename T>
+        static typename TEnableIf< TIsUInterface< T >::Value, TScriptInterface< T > >::Type
+            Get(FRegistrationStorage* Resolver);
+    };
 }
 
 class UObjectContainer;
@@ -22,15 +39,10 @@ class UObjectContainer;
 template <typename T>
 class TFactory
 {
-    template<typename U> static typename TEnableIf< TIsDerivedFrom< U, UObject >::Value, U* >::Type GetReturnType();
-    template<typename U> static typename TEnableIf< UnrealDI_Impl::TIsUInterface< U >::Value, TScriptInterface< U > >::Type GetReturnType();
-
-    using ReturnType = decltype(GetReturnType<T>());
-
 public:
     TFactory() = default;
 
-    ReturnType operator()() const;
+    auto operator()() const;
 
     bool IsValid()
     {
@@ -61,8 +73,24 @@ TFactory<T>::TFactory(UnrealDI_Impl::FRegistrationStorage& Resolver)
 }
 
 template <typename T>
-typename TFactory<T>::ReturnType TFactory<T>::operator()() const
+auto TFactory<T>::operator()() const
 {
+    UE_STATIC_ASSERT_COMPLETE_TYPE(T, "Type T in TFactory<T> must be fully defined when calling operator(), not just forward declared. Are you missing an #include?");
     checkf(ContainerPtr.IsValid(), TEXT("Object factory invoked after UObjectContainer was destroyed"));
-    return ReturnType(Resolver->ResolveImpl<T>());
+    return UnrealDI_Impl::FFactoryCallProxy::Get<T>(Resolver);
+}
+
+/* For UObject */
+template <typename T>
+typename TEnableIf< TIsDerivedFrom< T, UObject >::Value, T* >::Type
+UnrealDI_Impl::FFactoryCallProxy::Get(UnrealDI_Impl::FRegistrationStorage* Resolver)
+{
+    return (T*)(Resolver->ResolveImpl<T>());
+}
+
+template <typename T>
+typename TEnableIf< UnrealDI_Impl::TIsUInterface< T >::Value, TScriptInterface< T > >::Type
+UnrealDI_Impl::FFactoryCallProxy::Get(UnrealDI_Impl::FRegistrationStorage* Resolver)
+{
+    return TScriptInterface< T >(Resolver->ResolveImpl<T>());;
 }

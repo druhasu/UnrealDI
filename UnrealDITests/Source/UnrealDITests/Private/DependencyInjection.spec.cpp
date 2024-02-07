@@ -8,7 +8,8 @@
 #include "DI/ObjectContainer.h"
 
 #include "MockClasses.h"
-#include "LatentCommands.h"
+#include "MockReader.h"
+#include "BuildContainerHelper.h"
 
 BEGIN_DEFINE_SPEC(DependenciesInjectionSpec, "UnrealDI.Dependencies Injection", EAutomationTestFlags::ClientContext | EAutomationTestFlags::EditorContext | EAutomationTestFlags::ServerContext | EAutomationTestFlags::EngineFilter)
 END_DEFINE_SPEC(DependenciesInjectionSpec)
@@ -16,11 +17,10 @@ END_DEFINE_SPEC(DependenciesInjectionSpec)
 template <typename T>
 T* RegisterAndResolve()
 {
-    FObjectContainerBuilder Builder;
-    Builder.RegisterType<UMockReader>().As<IReader>().AsSelf();
-    Builder.RegisterType<T>();
-
-    UObjectContainer* Container = Builder.Build();
+    UObjectContainer* Container = FBuildContainerHelper::Build([](FObjectContainerBuilder& Builder)
+    {
+        Builder.RegisterType<T>();
+    });
 
     return Container->Resolve<T>();
 }
@@ -35,8 +35,6 @@ void DependenciesInjectionSpec::Define()
         TestNotNull("Dependency not injected", Resolved->Instance);
     });
 
-#if ENGINE_MAJOR_VERSION >= 5
-    
     It("Should Inject Concrete Type via TObjectPtr", [this]()
     {
         auto Resolved = RegisterAndResolve<UNeedObjectPtrInstance>();
@@ -44,8 +42,6 @@ void DependenciesInjectionSpec::Define()
         TestNotNull("Resolve returned nullptr", Resolved);
         TestNotNull("Dependency not injected", Resolved->Instance.Get());
     });
-
-#endif
 
     It("Should Inject Interface", [this]()
     {

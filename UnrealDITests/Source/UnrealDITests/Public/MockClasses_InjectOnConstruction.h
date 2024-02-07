@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "TestClasses.h"
+#include "IReader.h"
 #include "GameFramework/Actor.h"
 #include "Blueprint/UserWidget.h"
 #include "DI/InjectOnConstruction.h"

@@ -2,23 +2,13 @@
 
 #pragma once
 
-#include "TestClasses.h"
 #include "DI/Factory.h"
 #include "DI/ObjectsCollection.h"
 #include "Launch/Resources/Version.h"
 #include "MockClasses.generated.h"
 
-/* Implements IReader interface */
-UCLASS(Blueprintable)
-class UNREALDITESTS_API UMockReader : public UObject, public IReader
-{
-    GENERATED_BODY()
-
-public:
-    FString Read() override { return NextValue; }
-
-    FString NextValue;
-};
+class IReader;
+class UMockReader;
 
 /* Requests instance of Concrete type */
 UCLASS()
@@ -40,16 +30,12 @@ class UNREALDITESTS_API UNeedObjectPtrInstance : public UObject
 {
     GENERATED_BODY()
 public:
-
-    // we cannot wrap whole class inside #if, so wrap only internals
-#if ENGINE_MAJOR_VERSION >= 5
     void InitDependencies(TObjectPtr<UMockReader> ReaderConcrete)
     {
         Instance = ReaderConcrete;
     }
 
     TObjectPtr<UMockReader> Instance;
-#endif
 };
 
 /* Requests instance of Interface type */

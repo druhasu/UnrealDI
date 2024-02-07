@@ -7,6 +7,7 @@
 #include "DI/ObjectContainer.h"
 
 #include "MockClasses.h"
+#include "MockReader.h"
 #include "LatentCommands.h"
 
 BEGIN_DEFINE_SPEC(ObjectContainerBuilderSpec, "UnrealDI.ObjectContainerBuilder", EAutomationTestFlags::ClientContext | EAutomationTestFlags::EditorContext | EAutomationTestFlags::ServerContext | EAutomationTestFlags::EngineFilter)

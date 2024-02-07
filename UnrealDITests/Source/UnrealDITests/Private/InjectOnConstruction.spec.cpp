@@ -7,6 +7,7 @@
 #include "DI/ObjectContainer.h"
 
 #include "MockClasses.h"
+#include "BuildContainerHelper.h"
 #include "MockClasses_InjectOnConstruction.h"
 #include "LatentCommands.h"
 #include "TempWorldHelper.h"
@@ -17,10 +18,7 @@ template <typename TObj>
 void TestCommon(TFunction<TObj*(UWorld*)> ObjFactory)
 {
     FTempWorldHelper Helper;
-
-    FObjectContainerBuilder Builder;
-    Builder.RegisterType<UMockReader>().As<IReader>();
-    UObjectContainer* Container = Builder.Build(Helper.World);
+    UObjectContainer* Container = FBuildContainerHelper::Build(Helper.World);
 
     FInjectOnConstruction::SetContainerForWorld(Helper.World, Container);
 

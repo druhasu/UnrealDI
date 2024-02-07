@@ -3,11 +3,10 @@
 #pragma once
 
 #include "Containers/Map.h"
-#include "DI/Impl/InstanceInjector.h"
-#include "DI/Impl/InstanceConstructor.h"
 
 class UObject;
 class UClass;
+class UWorld;
 
 namespace UnrealDI_Impl
 {
@@ -21,14 +20,7 @@ namespace UnrealDI_Impl
         using FPostInitFunctionPtr = void (*)(UObject* ConstructedObject);
 
         template <typename T>
-        static void ExposeDependencies()
-        {
-            FUnprocessedEntry& Entry = GetUnprocessedEntries().Emplace_GetRef();
-            Entry.ClassGetter = &T::StaticClass;
-            Entry.ConstructFunction = &TInstanceConstructor<T>::Construct;
-            Entry.InitFunction = &TInstanceInjector<T>::Invoke;
-            Entry.PostInitFunction = &TInstanceConstructor<T>::PostInit;
-        }
+        static void ExposeDependencies();
 
         static void ProcessPendingRegistrations();
 
@@ -49,4 +41,17 @@ namespace UnrealDI_Impl
 
         static TMap<UClass*, FInitFunctionPtr> InitFunctions;
     };
+}
+
+#include "DI/Impl/InstanceInjector.h"
+#include "DI/Impl/InstanceConstructor.h"
+
+template <typename T>
+void UnrealDI_Impl::FDependenciesRegistry::ExposeDependencies()
+{
+    FUnprocessedEntry& Entry = GetUnprocessedEntries().Emplace_GetRef();
+    Entry.ClassGetter = &T::StaticClass;
+    Entry.ConstructFunction = &TInstanceConstructor<T>::Construct;
+    Entry.InitFunction = &TInstanceInjector<T>::Invoke;
+    Entry.PostInitFunction = &TInstanceConstructor<T>::PostInit;
 }

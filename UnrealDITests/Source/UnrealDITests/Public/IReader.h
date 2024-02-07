@@ -3,7 +3,7 @@
 #pragma once
 
 #include "UObject/Interface.h"
-#include "TestClasses.generated.h"
+#include "IReader.generated.h"
 
 UINTERFACE()
 class UNREALDITESTS_API UReader : public UInterface

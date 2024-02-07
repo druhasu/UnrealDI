@@ -7,6 +7,7 @@ public class UnrealDITests : ModuleRules
 	public UnrealDITests(ReadOnlyTargetRules Target) : base(Target)
 	{
 		PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+		bUseUnity = false; // some tests may report false positive results without this
 		
 		PublicIncludePaths.AddRange(
 			new string[] {

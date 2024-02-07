@@ -3,6 +3,7 @@
 #include "Misc/AutomationTest.h"
 
 #include "MockClasses.h"
+#include "MockReader.h"
 #include "LatentCommands.h"
 
 /*

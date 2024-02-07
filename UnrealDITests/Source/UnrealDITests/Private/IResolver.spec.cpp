@@ -7,43 +7,39 @@
 #include "DI/ObjectContainer.h"
 
 #include "MockClasses.h"
+#include "MockReader.h"
+#include "BuildContainerHelper.h"
 #include "LatentCommands.h"
 
 BEGIN_DEFINE_SPEC(IResolverSpec, "UnrealDI.IResolver", EAutomationTestFlags::ClientContext | EAutomationTestFlags::EditorContext | EAutomationTestFlags::ServerContext | EAutomationTestFlags::EngineFilter)
-UObjectContainer* BuildContainer()
-{
-    FObjectContainerBuilder Builder;
-    Builder.RegisterType<UMockReader>().As<IReader>().AsSelf();
-    return Builder.Build();
-}
 END_DEFINE_SPEC(IResolverSpec)
 
 void IResolverSpec::Define()
 {
     It("Should Resolve By UClass", [this]()
     {
-        UObject* Reader = BuildContainer()->Resolve(UMockReader::StaticClass());
+        UObject* Reader = FBuildContainerHelper::Build()->Resolve(UMockReader::StaticClass());
 
         TestNotNull("Resolve returned nullptr", Reader);
     });
 
     It("Should Resolve By Concrete Type Template", [this]()
     {
-        UMockReader* Reader = BuildContainer()->Resolve<UMockReader>();
+        UMockReader* Reader = FBuildContainerHelper::Build()->Resolve<UMockReader>();
 
         TestNotNull("Resolve returned nullptr", Reader);
     });
 
     It("Should Resolve By Interface Template", [this]()
     {
-        TScriptInterface<IReader> Reader = BuildContainer()->Resolve<IReader>();
+        TScriptInterface<IReader> Reader = FBuildContainerHelper::Build()->Resolve<IReader>();
 
         TestNotNull("Resolve returned nullptr", Reader.GetInterface());
     });
 
     It("Should ResolveAll By UClass", [this]()
     {
-        TObjectsCollection<UObject> Readers = BuildContainer()->ResolveAll(UMockReader::StaticClass());
+        TObjectsCollection<UObject> Readers = FBuildContainerHelper::Build()->ResolveAll(UMockReader::StaticClass());
 
         TestTrue("Resolve returned invalid collection", Readers.IsValid());
         TestTrue("Resolve returned empty collection", Readers.Num() > 0);
@@ -51,7 +47,7 @@ void IResolverSpec::Define()
 
     It("Should ResolveAll By Concrete Type Template", [this]()
     {
-        TObjectsCollection<UObject> Readers = BuildContainer()->ResolveAll<UMockReader>();
+        TObjectsCollection<UObject> Readers = FBuildContainerHelper::Build()->ResolveAll<UMockReader>();
 
         TestTrue("Resolve returned invalid collection", Readers.IsValid());
         TestTrue("Resolve returned empty collection", Readers.Num() > 0);
@@ -59,7 +55,7 @@ void IResolverSpec::Define()
 
     It("Should ResolveAll By Interface Template", [this]()
     {
-        TObjectsCollection<UObject> Readers = BuildContainer()->ResolveAll<IReader>();
+        TObjectsCollection<UObject> Readers = FBuildContainerHelper::Build()->ResolveAll<IReader>();
 
         TestTrue("Resolve returned invalid collection", Readers.IsValid());
         TestTrue("Resolve returned empty collection", Readers.Num() > 0);

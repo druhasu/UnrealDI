@@ -29,7 +29,7 @@ namespace UnrealDI_Impl
     protected:
         friend class FObjectContainerBuilder;
         template <typename T> friend struct TDependencyResolver;
-        template <typename T> friend class ::TFactory;
+        friend struct FFactoryCallProxy;
 
         struct FResolver
         {

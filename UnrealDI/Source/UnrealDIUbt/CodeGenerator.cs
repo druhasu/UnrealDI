@@ -110,7 +110,7 @@ public static class CodeGenerator
             foreach (UhtHeaderFile? headerFile in allIncludeFiles)
             {
                 sb.Append("#include \"");
-                sb.Append(headerFile.IncludeFilePath);
+                sb.Append(GetModuleRelativeIncludePath(headerFile));
                 sb.Append("\"\n");
             }
 
@@ -154,7 +154,7 @@ public static class CodeGenerator
             return null;
         }
 
-        List<UhtClass>? result = null;
+        List<UhtClass> result = new();
 
         // try find all UClasses or IInterfaces among the rest of the tokens
         while (!tokenReader.IsEOF)
@@ -169,8 +169,6 @@ public static class CodeGenerator
 
                     if (type is UhtClass dependencyClass)
                     {
-                        result ??= new List<UhtClass>();
-
                         if (!result.Contains(dependencyClass))
                         {
                             result.Add(dependencyClass);
@@ -235,11 +233,16 @@ public static class CodeGenerator
         bool foundMatchingDeclaration = false;
         const int ScoreThreshold = 90;
 
+        //Log.WriteLine(LogEventType.Warning, $"Found declarations in class {uhtClass.SourceName}");
+
         for (int declarationIndex = 0; declarationIndex < uhtClass.Declarations.Count; ++declarationIndex)
         {
             UhtDeclaration declaration = uhtClass.Declarations[declarationIndex];
             if (declaration.Tokens.Length == 0)
                 continue;
+
+            // Debug. Dumps all declarations to log
+            //Log.WriteLine(LogEventType.Warning, ".   " + string.Join(" ", declaration.Tokens.Select(t => t.Value.ToString())));
 
             for (int tokenIndex = 0; tokenIndex < declaration.Tokens.Length; ++tokenIndex)
             {
@@ -293,7 +296,14 @@ public static class CodeGenerator
             return InitDependenciesFindResult.FoundSimilar;
         }
 
+        // TODO: Do a fulltext search of InitDependencies inside the class. It may be inside UHT ignored preprocessor block
+
         foundDeclaration = new();
         return InitDependenciesFindResult.NotFound;
+    }
+
+    private static string GetModuleRelativeIncludePath(UhtHeaderFile headerFile)
+    {
+        return headerFile.Package.Module.Name + "/" + headerFile.ModuleRelativeFilePath;
     }
 }

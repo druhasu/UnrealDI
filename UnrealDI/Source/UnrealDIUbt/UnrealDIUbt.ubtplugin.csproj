@@ -22,7 +22,7 @@
 		<OutputPath>$(ProjectRoot)\Binaries\DotNET\UnrealBuildTool\Plugins\$(AssemblyName)\</OutputPath>
 		<TreatWarningsAsErrors>true</TreatWarningsAsErrors>
 		<DebugType>pdbonly</DebugType>
-		<Nullable>enable</Nullable>
+		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 	</PropertyGroup>
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Development|AnyCPU' ">
 		<DefineConstants>$(DefineConstants);TRACE</DefineConstants>
@@ -57,8 +57,4 @@
 			<HintPath>$(EngineDir)\Binaries\DotNET\UnrealBuildTool\UnrealBuildTool.dll</HintPath>
 		</Reference>
 	</ItemGroup>
-
-	<Target Name="CopyPackages" AfterTargets="Build">
-		<Copy SourceFiles="$(PkgFuzzySharp)\lib\netcoreapp2.1\FuzzySharp.dll" DestinationFolder="$(OutputPath)" />
-	</Target>
 </Project>

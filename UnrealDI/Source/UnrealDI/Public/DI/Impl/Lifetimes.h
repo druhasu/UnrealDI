@@ -2,7 +2,6 @@
 
 #pragma once
 
-#include "DI/Impl/InstanceFactoryInvoker.h"
 #include "UObject/Object.h"
 
 namespace UnrealDI_Impl
@@ -14,23 +13,37 @@ namespace UnrealDI_Impl
     public:
         virtual ~FLifetimeHandler() = default;
 
-        virtual UObject* Get(FRegistrationStorage& Resolver) = 0;
+        virtual UObject* Get() = 0;
+        virtual void Set(UObject* Object) = 0;
         virtual void AddReferencedObjects(FReferenceCollector& Collector) = 0;
     };
 
     class FLifetimeHandler_Transient : public FLifetimeHandler
     {
     public:
-        FLifetimeHandler_Transient(FInstanceFactoryInvoker&& Factory)
-            : Factory(MoveTemp(Factory))
+        UObject* Get() override { return nullptr; }
+        void Set(UObject* Object) override {}
+        void AddReferencedObjects(FReferenceCollector& Collector) override {}
+
+        static TSharedRef<FLifetimeHandler> Make() { return MakeShared<FLifetimeHandler_Transient>(); }
+    };
+
+    class FLifetimeHandler_StaticFactory : public FLifetimeHandler
+    {
+    public:
+        using FunctionPtr = UObject* (*)();
+
+        FLifetimeHandler_StaticFactory(FunctionPtr Factory)
+            : Factory(Factory)
         {
         }
 
-        UObject* Get(FRegistrationStorage& Resolver) override { return Factory.Invoke(Resolver); }
+        UObject* Get() override { return Factory(); }
+        void Set(UObject* Object) override {}
         void AddReferencedObjects(FReferenceCollector& Collector) override {}
 
     private:
-        FInstanceFactoryInvoker Factory;
+        FunctionPtr Factory;
     };
 
     class FLifetimeHandler_CustomFactory : public FLifetimeHandler
@@ -41,7 +54,8 @@ namespace UnrealDI_Impl
         {
         }
 
-        UObject* Get(FRegistrationStorage& Resolver) override { return Factory(); }
+        UObject* Get() override { return Factory(); }
+        void Set(UObject* Object) override {}
         void AddReferencedObjects(FReferenceCollector& Collector) override {}
 
     private:
@@ -56,7 +70,8 @@ namespace UnrealDI_Impl
         {
         }
 
-        UObject* Get(FRegistrationStorage& Resolver) override { return Instance; }
+        UObject* Get() override { return Instance; }
+        void Set(UObject* Object) override {}
         void AddReferencedObjects(FReferenceCollector& Collector) override
         {
             Collector.AddReferencedObject(Instance);
@@ -69,35 +84,29 @@ namespace UnrealDI_Impl
     class FLifetimeHandler_SingleInstance : public FLifetimeHandler
     {
     public:
-        FLifetimeHandler_SingleInstance(FInstanceFactoryInvoker&& Factory)
-            : Factory(MoveTemp(Factory))
-        {
-        }
-
-        UObject* Get(FRegistrationStorage& Resolver) override { return Instance ? Instance : (Instance = Factory.Invoke(Resolver)); }
+        UObject* Get() override { return Instance; }
+        void Set(UObject* Object) override { Instance = Object; }
         void AddReferencedObjects(FReferenceCollector& Collector) override
         {
             Collector.AddReferencedObject(Instance);
         }
 
+        static TSharedRef<FLifetimeHandler> Make() { return MakeShared<FLifetimeHandler_SingleInstance>(); }
+
     private:
         UObject* Instance = nullptr;
-        FInstanceFactoryInvoker Factory;
     };
 
     class FLifetimeHandler_WeakSingleInstance : public FLifetimeHandler
     {
     public:
-        FLifetimeHandler_WeakSingleInstance(FInstanceFactoryInvoker&& Factory)
-            : Factory(MoveTemp(Factory))
-        {
-        }
-
-        UObject* Get(FRegistrationStorage& Resolver) override { return Instance.IsValid() ? Instance.Get() : (Instance = Factory.Invoke(Resolver)).Get(); }
+        UObject* Get() override { return Instance.Get(); }
+        void Set(UObject* Object) override { Instance = Object; }
         void AddReferencedObjects(FReferenceCollector& Collector) override {}
+
+        static TSharedRef<FLifetimeHandler> Make() { return MakeShared<FLifetimeHandler_WeakSingleInstance>(); }
 
     private:
         TWeakObjectPtr<UObject> Instance = nullptr;
-        FInstanceFactoryInvoker Factory;
     };
 }

@@ -47,7 +47,7 @@ protected:
         {
             using Invoker = UnrealDI_Impl::TInitDependenciesInvoker<T, UnrealDI_Impl::TInitMethodTypologyDeducer< T >>;
 
-            Invoker::Invoke(Self, **ContainerPtr);
+            Invoker::Invoke(Self, (*ContainerPtr)->Storage);
         }
     }
 

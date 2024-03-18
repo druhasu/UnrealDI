@@ -10,15 +10,15 @@
 
 template <typename T> class TObjectsCollection;
 
-// we need this because UHT does not allow inheriting class from namespace
-using FRegistrationStorageType = UnrealDI_Impl::FRegistrationStorage;
-
 UCLASS()
-class UNREALDI_API UObjectContainer : public UObject, public IResolver, public IInjector, public FRegistrationStorageType
+class UNREALDI_API UObjectContainer : public UObject, public IResolver, public IInjector
 {
     GENERATED_BODY()
 
 public:
+
+    void PostInitProperties() override;
+
     // ~Begin IResolver interface
     UObject* Resolve(class UClass* Type) override;
     TObjectsCollection<UObject> ResolveAll(UClass* Type) override;
@@ -43,11 +43,14 @@ public:
     template <typename TFunction>
     void InvokeWithDependencies(TFunction&& Function)
     {
-        UnrealDI_Impl::TFunctionWithDependenciesInvokerProvider<TFunction>::Invoker::Invoke(*this, Forward<TFunction>(Function));
+        UnrealDI_Impl::TFunctionWithDependenciesInvokerProvider<TFunction>::Invoker::Invoke(Storage, Forward<TFunction>(Function));
     }
 
 private:
     friend class FObjectContainerBuilder;
+    friend class FInjectOnConstruction;
 
     static void AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector);
+
+    UnrealDI_Impl::FRegistrationStorage Storage;
 };

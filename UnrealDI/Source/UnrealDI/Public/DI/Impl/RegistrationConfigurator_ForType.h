@@ -9,7 +9,6 @@
 #include "DI/Impl/Operations/SingleInstanceOperation.h"
 #include "DI/Impl/Operations/WeakSingleInstanceOperation.h"
 #include "DI/Impl/Operations/FromBlueprintOperation.h"
-#include "DI/Impl/InstanceFactory.h"
 #include "UObject/Interface.h"
 #include "Templates/UnrealTypeTraits.h"
 
@@ -32,21 +31,20 @@ namespace UnrealDI_Impl
         static_assert(!TIsDerivedFrom<TObject, UInterface>::Value, "You are trying to register UInterface derived class. This is probably a typo");
 
         using ImplType = TObject;
-        using FLifetimeHandlerFactory = TSharedRef<FLifetimeHandler>(*)(const ThisType*);
+        using FLifetimeHandlerFactory = TSharedRef<FLifetimeHandler>(*)();
 
         TRegistrationConfigurator_ForType(const TRegistrationConfigurator_ForType&) = delete;
         TRegistrationConfigurator_ForType(TRegistrationConfigurator_ForType&&) = default;
 
         TRegistrationConfigurator_ForType()
             : FRegistrationConfiguratorBase(TObject::StaticClass())
-            , EffectiveClassPtr(TObject::StaticClass())
         {
-            LifetimeHandlerFactory = &ThisType::CreateDefaultLifetimeHandler;
+            LifetimeHandlerFactory = &FLifetimeHandler_Transient::Make;
         }
 
         TSharedRef<FLifetimeHandler> CreateLifetimeHandler() const override
         {
-            return LifetimeHandlerFactory(this);
+            return LifetimeHandlerFactory();
         }
 
     private:
@@ -57,17 +55,6 @@ namespace UnrealDI_Impl
         friend class RegistrationOperations::TWeakSingleInstanceOperation< ThisType >;
         friend class RegistrationOperations::TFromBlueprintOperation< ThisType, TObject >;
 
-        FInstanceFactoryInvoker GetFactory() const
-        {
-            return { &TInstanceFactory<TObject>::CreateInstance, EffectiveClassPtr };
-        }
-
-        static TSharedRef<FLifetimeHandler> CreateDefaultLifetimeHandler(const ThisType* This)
-        {
-            return MakeShared<UnrealDI_Impl::FLifetimeHandler_Transient>(This->GetFactory());
-        }
-
-        FSoftObjectPtr EffectiveClassPtr;
         FLifetimeHandlerFactory LifetimeHandlerFactory;
     };
 

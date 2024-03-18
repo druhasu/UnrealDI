@@ -6,6 +6,7 @@
 #include "Templates/SharedPointer.h"
 
 class UClass;
+class UObject;
 class FObjectContainerBuilder;
 
 namespace UnrealDI_Impl
@@ -16,7 +17,7 @@ namespace UnrealDI_Impl
     {
     public:
         FRegistrationConfiguratorBase(UClass* InType)
-            : ImplClass(InType)
+            : ImplClass(InType), EffectiveClassPtr(InType)
         {
         }
 
@@ -28,6 +29,7 @@ namespace UnrealDI_Impl
 
         UClass* ImplClass;
         TArray<UClass*> InterfaceTypes;
+        TSoftClassPtr<UObject> EffectiveClassPtr;
         bool bAutoCreate = false;
     };
 }

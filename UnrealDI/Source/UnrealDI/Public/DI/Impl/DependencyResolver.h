@@ -20,10 +20,10 @@ namespace UnrealDI_Impl
     {
         using ReturnType = T*;
 
-        static ReturnType Resolve(FRegistrationStorage& Resolver)
+        static ReturnType Resolve(const FRegistrationStorage& Resolver)
         {
             // call ResolveImpl here to leverage auto-registration of concrete types
-            return Cast<T>(Resolver.ResolveImpl<T>());
+            return Cast<T>(Resolver.Resolve(TStaticClass<T>::StaticClass()));
         }
     };
 
@@ -32,10 +32,10 @@ namespace UnrealDI_Impl
     {
         using ReturnType = TObjectPtr<T>;
 
-        static ReturnType Resolve(FRegistrationStorage& Resolver)
+        static ReturnType Resolve(const FRegistrationStorage& Resolver)
         {
             // call ResolveImpl here to leverage auto-registration of concrete types
-            return Cast<T>(Resolver.ResolveImpl<T>());
+            return Cast<T>(Resolver.Resolve(TStaticClass<T>::StaticClass()));
         }
     };
 
@@ -44,10 +44,10 @@ namespace UnrealDI_Impl
     {
         using ReturnType = TScriptInterface<T>;
 
-        static ReturnType Resolve(FRegistrationStorage& Resolver)
+        static ReturnType Resolve(const FRegistrationStorage& Resolver)
         {
             // call ResolveImpl here to leverage auto-registration of concrete types
-            return Resolver.ResolveImpl<T>();
+            return Resolver.Resolve(TStaticClass<T>::StaticClass());
         }
     };
 
@@ -56,7 +56,7 @@ namespace UnrealDI_Impl
     {
         using ReturnType = TObjectsCollection<T>;
 
-        static ReturnType Resolve(FRegistrationStorage& Resolver)
+        static ReturnType Resolve(const FRegistrationStorage& Resolver)
         {
             return Resolver.ResolveAll(TStaticClass<T>::StaticClass());
         }
@@ -67,7 +67,7 @@ namespace UnrealDI_Impl
     {
         using ReturnType = TFactory<T>;
 
-        static ReturnType Resolve(FRegistrationStorage& Resolver)
+        static ReturnType Resolve(const FRegistrationStorage& Resolver)
         {
             return TFactory<T>(Resolver);
         }

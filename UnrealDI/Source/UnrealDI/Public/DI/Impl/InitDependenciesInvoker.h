@@ -17,14 +17,14 @@ namespace UnrealDI_Impl
     template <typename T>
     struct TInitDependenciesInvoker<T, TArgumentPack<>>
     {
-        static void Invoke(T* Self, FRegistrationStorage& Resolver);
+        static void Invoke(T* Self, const FRegistrationStorage& Resolver);
     };
 
     // specialization for classes with arguments
     template <typename T, typename... TArgs>
     struct TInitDependenciesInvoker<T, TArgumentPack<TArgs...>>
     {
-        static void Invoke(T* Self, FRegistrationStorage& Resolver);
+        static void Invoke(T* Self, const FRegistrationStorage& Resolver);
     };
 
 
@@ -50,13 +50,13 @@ namespace UnrealDI_Impl
 #include "DI/Impl/DependencyResolverInvoker.h"
 
 template<typename T>
-void UnrealDI_Impl::TInitDependenciesInvoker<T, UnrealDI_Impl::TArgumentPack<>>::Invoke(T* Self, FRegistrationStorage& Resolver)
+void UnrealDI_Impl::TInitDependenciesInvoker<T, UnrealDI_Impl::TArgumentPack<>>::Invoke(T* Self, const FRegistrationStorage& Resolver)
 {
     UnrealDI_Impl::TInitDependeciesNoArgsInvoker<T>::Invoke(Self);
 }
 
 template <typename T, typename... TArgs>
-void UnrealDI_Impl::TInitDependenciesInvoker<T, UnrealDI_Impl::TArgumentPack<TArgs...>>::Invoke(T* Self, FRegistrationStorage& Resolver)
+void UnrealDI_Impl::TInitDependenciesInvoker<T, UnrealDI_Impl::TArgumentPack<TArgs...>>::Invoke(T* Self, const FRegistrationStorage& Resolver)
 {
     Self->InitDependencies(TDependencyResolverInvoker<TArgs>(Resolver)...);
 }

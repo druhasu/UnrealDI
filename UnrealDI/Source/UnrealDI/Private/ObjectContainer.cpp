@@ -7,33 +7,32 @@
 #include "DI/ObjectsCollection.h"
 
 
+void UObjectContainer::PostInitProperties()
+{
+    Super::PostInitProperties();
+
+    Storage.InitOwner(this);
+}
+
 UObject* UObjectContainer::Resolve(UClass* Type)
 {
     checkf(Type, TEXT("Requested object of null type"));
 
-    FResolver* Resolver = FindResolver(Type);
-    checkf(Resolver, TEXT("Type %s is not registered"), *Type->GetName());
-
-    return Resolver->LifetimeHandler->Get(*this);
+    return Storage.Resolve(Type);
 }
 
 TObjectsCollection<UObject> UObjectContainer::ResolveAll(UClass* Type)
 {
-    return FRegistrationStorageType::ResolveAll(Type);
+    checkf(Type, TEXT("Requested object of null type"));
+
+    return Storage.ResolveAll(Type);
 }
 
 bool UObjectContainer::IsRegistered(UClass* Type)
 {
-    if (Registrations.Contains(Type))
-    {
-        return true;
-    }
-    else if (ParentContainer)
-    {
-        return ParentContainer->IsRegistered(Type);
-    }
+    checkf(Type, TEXT("Requested object of null type"));
 
-    return false;
+    return Storage.IsRegistered(Type);
 }
 
 bool UObjectContainer::Inject(UObject* Object) const
@@ -45,7 +44,7 @@ bool UObjectContainer::Inject(UObject* Object) const
     auto InitFunction = UnrealDI_Impl::FDependenciesRegistry::FindInitFunction(Class);
     if (InitFunction != nullptr)
     {
-        InitFunction(*Object, *const_cast<UObjectContainer*>(this));
+        InitFunction(*Object, Storage);
         return true;
     }
 
@@ -63,13 +62,5 @@ void UObjectContainer::AddReferencedObjects(UObject* InThis, FReferenceCollector
 {
     UObjectContainer* Container = (UObjectContainer*)InThis;
 
-    for (auto& Resolvers : Container->Registrations)
-    {
-        for (FResolver& Resolver : Resolvers.Value)
-        {
-            Resolver.LifetimeHandler->AddReferencedObjects(Collector);
-        }
-    }
-
-    Collector.AddReferencedObject(Container->ParentContainer);
+    Container->Storage.AddReferencedObjects(Collector);
 }

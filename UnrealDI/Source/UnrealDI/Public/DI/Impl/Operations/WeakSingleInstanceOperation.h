@@ -17,15 +17,9 @@ namespace RegistrationOperations
         TConfigurator& WeakSingleInstance()
         {
             TConfigurator& This = StaticCast<TConfigurator&>(*this);
-            This.LifetimeHandlerFactory = &TWeakSingleInstanceOperation::CreateLifetimeHandler;
+            This.LifetimeHandlerFactory = &FLifetimeHandler_WeakSingleInstance::Make;
 
             return This;
-        }
-
-    private:
-        static TSharedRef<FLifetimeHandler> CreateLifetimeHandler(const TConfigurator* This)
-        {
-            return MakeShared<UnrealDI_Impl::FLifetimeHandler_WeakSingleInstance>(This->GetFactory());
         }
     };
 }

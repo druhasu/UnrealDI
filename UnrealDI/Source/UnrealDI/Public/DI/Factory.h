@@ -20,12 +20,12 @@ namespace UnrealDI_Impl
         /* For UObject */
         template <typename T>
         static typename TEnableIf< TIsDerivedFrom< T, UObject >::Value, T* >::Type
-            Get(FRegistrationStorage* Resolver);
+            Get(const FRegistrationStorage* Resolver);
 
         /* For TScriptInterface */
         template <typename T>
         static typename TEnableIf< TIsUInterface< T >::Value, TScriptInterface< T > >::Type
-            Get(FRegistrationStorage* Resolver);
+            Get(const FRegistrationStorage* Resolver);
     };
 }
 
@@ -57,16 +57,17 @@ public:
 private:
     template <typename U> friend struct UnrealDI_Impl::TDependencyResolver;
     
-    TFactory(UnrealDI_Impl::FRegistrationStorage& Resolver);
+    TFactory(const UnrealDI_Impl::FRegistrationStorage& Resolver);
 
     TWeakObjectPtr<UObject> ContainerPtr;
-    UnrealDI_Impl::FRegistrationStorage* Resolver = nullptr;
+    const UnrealDI_Impl::FRegistrationStorage* Resolver = nullptr;
 };
 
 #include "DI/Impl/RegistrationStorage.h"
+#include "DI/Impl/StaticClass.h"
 
 template <typename T>
-TFactory<T>::TFactory(UnrealDI_Impl::FRegistrationStorage& Resolver)
+TFactory<T>::TFactory(const UnrealDI_Impl::FRegistrationStorage& Resolver)
     : ContainerPtr(Resolver.GetOwner())
     , Resolver(&Resolver)
 {
@@ -83,14 +84,14 @@ auto TFactory<T>::operator()() const
 /* For UObject */
 template <typename T>
 typename TEnableIf< TIsDerivedFrom< T, UObject >::Value, T* >::Type
-UnrealDI_Impl::FFactoryCallProxy::Get(UnrealDI_Impl::FRegistrationStorage* Resolver)
+UnrealDI_Impl::FFactoryCallProxy::Get(const UnrealDI_Impl::FRegistrationStorage* Resolver)
 {
-    return (T*)(Resolver->ResolveImpl<T>());
+    return (T*)(Resolver->Resolve(UnrealDI_Impl::TStaticClass<T>::StaticClass()));
 }
 
 template <typename T>
 typename TEnableIf< UnrealDI_Impl::TIsUInterface< T >::Value, TScriptInterface< T > >::Type
-UnrealDI_Impl::FFactoryCallProxy::Get(UnrealDI_Impl::FRegistrationStorage* Resolver)
+UnrealDI_Impl::FFactoryCallProxy::Get(const UnrealDI_Impl::FRegistrationStorage* Resolver)
 {
-    return TScriptInterface< T >(Resolver->ResolveImpl<T>());;
+    return TScriptInterface< T >(Resolver->Resolve(UnrealDI_Impl::TStaticClass<T>::StaticClass()));
 }

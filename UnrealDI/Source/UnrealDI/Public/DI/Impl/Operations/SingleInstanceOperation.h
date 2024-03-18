@@ -17,16 +17,10 @@ namespace RegistrationOperations
         TConfigurator& SingleInstance(bool bAutoCreate = false)
         {
             TConfigurator& This = StaticCast<TConfigurator&>(*this);
-            This.LifetimeHandlerFactory = &TSingleInstanceOperation::CreateLifetimeHandler;
+            This.LifetimeHandlerFactory = &FLifetimeHandler_SingleInstance::Make;
             This.bAutoCreate = bAutoCreate;
 
             return This;
-        }
-
-    private:
-        static TSharedRef<FLifetimeHandler> CreateLifetimeHandler(const TConfigurator* This)
-        {
-            return MakeShared<UnrealDI_Impl::FLifetimeHandler_SingleInstance>(This->GetFactory());
         }
     };
 }

@@ -6,7 +6,6 @@
 
 class UObject;
 class UClass;
-class UWorld;
 
 namespace UnrealDI_Impl
 {
@@ -15,9 +14,7 @@ namespace UnrealDI_Impl
     class UNREALDI_API FDependenciesRegistry
     {
     public:
-        using FConstructFunctionPtr = UObject* (*)(UWorld* World, UObject* Outer, UClass* EffectiveClass);
-        using FInitFunctionPtr = void (*)(UObject& ConstructedObject, FRegistrationStorage& Container);
-        using FPostInitFunctionPtr = void (*)(UObject* ConstructedObject);
+        using FInitFunctionPtr = void (*)(UObject& ConstructedObject, const FRegistrationStorage& Container);
 
         template <typename T>
         static void ExposeDependencies();
@@ -32,9 +29,7 @@ namespace UnrealDI_Impl
         struct FUnprocessedEntry
         {
             FClassGetter ClassGetter;
-            FConstructFunctionPtr ConstructFunction;
             FInitFunctionPtr InitFunction;
-            FPostInitFunctionPtr PostInitFunction;
         };
 
         static TArray<FUnprocessedEntry>& GetUnprocessedEntries();
@@ -44,14 +39,13 @@ namespace UnrealDI_Impl
 }
 
 #include "DI/Impl/InstanceInjector.h"
-#include "DI/Impl/InstanceConstructor.h"
 
 template <typename T>
 void UnrealDI_Impl::FDependenciesRegistry::ExposeDependencies()
 {
-    FUnprocessedEntry& Entry = GetUnprocessedEntries().Emplace_GetRef();
+    TArray<FUnprocessedEntry>& UnprocessedEntries = GetUnprocessedEntries();
+
+    FUnprocessedEntry& Entry = UnprocessedEntries.Emplace_GetRef();
     Entry.ClassGetter = &T::StaticClass;
-    Entry.ConstructFunction = &TInstanceConstructor<T>::Construct;
     Entry.InitFunction = &TInstanceInjector<T>::Invoke;
-    Entry.PostInitFunction = &TInstanceConstructor<T>::PostInit;
 }

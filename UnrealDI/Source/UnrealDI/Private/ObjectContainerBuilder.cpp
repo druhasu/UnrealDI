@@ -6,7 +6,6 @@
 UObjectContainer* FObjectContainerBuilder::Build(UObject* Outer)
 {
     UObjectContainer* Container = Outer ? NewObject<UObjectContainer>(Outer) : NewObject<UObjectContainer>();
-    Container->InitStorage(Container);
 
     AddRegistrationsToContainer(Container);
 
@@ -16,8 +15,7 @@ UObjectContainer* FObjectContainerBuilder::Build(UObject* Outer)
 UObjectContainer* FObjectContainerBuilder::BuildNested(UObjectContainer& Parent)
 {
     UObjectContainer* Container = NewObject<UObjectContainer>(&Parent);
-    Container->InitStorage(Container);
-    Container->ParentContainer = &Parent;
+    Container->Storage.ParentStorage = &Parent.Storage;
 
     AddRegistrationsToContainer(Container);
 
@@ -26,28 +24,36 @@ UObjectContainer* FObjectContainerBuilder::BuildNested(UObjectContainer& Parent)
 
 void FObjectContainerBuilder::AddRegistrationsToContainer(UObjectContainer* Container)
 {
+    using namespace UnrealDI_Impl;
+
+    FRegistrationStorage& Storage = Container->Storage;
+
+    // add user provided registrations
     for (auto& Registration : Registrations)
     {
-        TSharedRef<UnrealDI_Impl::FLifetimeHandler> LifetimeHandler = Registration->CreateLifetimeHandler();
+        TSharedRef<FLifetimeHandler> LifetimeHandler = Registration->CreateLifetimeHandler();
 
         // if no interface types declared, register as itself
         if (Registration->InterfaceTypes.Num() == 0)
         {
-            Container->AddRegistration(Registration->ImplClass, LifetimeHandler);
+            Storage.AddRegistration(Registration->ImplClass, Registration->EffectiveClassPtr, LifetimeHandler);
         }
 
         // register all interfaces that this type implements
         for (UClass* Interface : Registration->InterfaceTypes)
         {
-            Container->AddRegistration(Interface, LifetimeHandler);
+            Storage.AddRegistration(Interface, Registration->ImplClass, LifetimeHandler);
         }
     }
 
     // register container itself as IResolver
-    Container->AddRegistration(IResolver::UClassType::StaticClass(), MakeShared<UnrealDI_Impl::FLifetimeHandler_Instance>(Container));
+    Storage.AddRegistration(UResolver::StaticClass(), {}, MakeShared<FLifetimeHandler_Instance>(Container));
 
     // register container itself as IInjector
-    Container->AddRegistration(IInjector::UClassType::StaticClass(), MakeShared<UnrealDI_Impl::FLifetimeHandler_Instance>(Container));
+    Storage.AddRegistration(UInjector::StaticClass(), {}, MakeShared<FLifetimeHandler_Instance>(Container));
+
+    // finalize creation and let Storage to create its services
+    Storage.InitServices();
 
     // resolve all classes that are marked with bAutoCreate
     for (auto& Registration : Registrations)

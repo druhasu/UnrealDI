@@ -12,7 +12,7 @@ namespace UnrealDI_Impl
     template<typename TObject>
     struct TInstanceInjector
     {
-        static void Invoke(UObject& TargetObject, FRegistrationStorage& Resolver);
+        static void Invoke(UObject& TargetObject, const FRegistrationStorage& Resolver);
     };
 }
 
@@ -20,7 +20,7 @@ namespace UnrealDI_Impl
 #include "DI/Impl/InitMethodTypologyDeducer.h"
 
 template<typename TObject>
-void UnrealDI_Impl::TInstanceInjector<TObject>::Invoke(UObject& TargetObject, FRegistrationStorage& Resolver)
+void UnrealDI_Impl::TInstanceInjector<TObject>::Invoke(UObject& TargetObject, const FRegistrationStorage& Resolver)
 {
     using Invoker = UnrealDI_Impl::TInitDependenciesInvoker<TObject, UnrealDI_Impl::TInitMethodTypologyDeducer< TObject >>;
     Invoker::Invoke((TObject*)&TargetObject, Resolver);

@@ -17,6 +17,12 @@ public:
     bool bFinalizeCalled = false;
 };
 
+UCLASS()
+class UTestInstanceFactoryUnsupportedObject : public UObject
+{
+    GENERATED_BODY()
+};
+
 UCLASS(HideDropDown)
 class UTestInstanceFactory : public UObject, public IInstanceFactory
 {
@@ -35,6 +41,7 @@ public:
         {
             Obj->CreatedBy = const_cast<UTestInstanceFactory*>(this);
         }
+        CreatedObjects.Add(Result);
         return Result;
     }
 
@@ -47,4 +54,6 @@ public:
     }
 
     UClass* BaseClass = UTestInstanceFactoryObject::StaticClass();
+
+    mutable TArray<UObject*> CreatedObjects;
 };

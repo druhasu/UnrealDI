@@ -110,4 +110,18 @@ void FIInstanceFactorySpec::Define()
         TestEqual("CreatedBy", Resolved->CreatedBy, NestedFactory);
         TestTrue("Finalize called", Resolved->bFinalizeCalled);
     });
+
+    It("Should not use IInstanceFactory for unsupported type", [this]
+    {
+        UTestInstanceFactory* Factory = NewObject<UTestInstanceFactory>();
+
+        FObjectContainerBuilder Builder;
+        Builder.RegisterInstance(Factory).As<IInstanceFactory>();
+
+        UObjectContainer* Container = Builder.Build();
+
+        UTestInstanceFactoryUnsupportedObject* Resolved = Container->Resolve<UTestInstanceFactoryUnsupportedObject>();
+
+        TestEqual("Created objects Num", Factory->CreatedObjects.Num(), 0);
+    });
 }

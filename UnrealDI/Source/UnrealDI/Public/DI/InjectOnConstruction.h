@@ -2,9 +2,10 @@
 
 #pragma once
 
-#include "DI/ObjectContainer.h"
-#include "DI/Impl/InitDependenciesInvoker.h"
-#include "DI/Impl/InitMethodTypologyDeducer.h"
+#include "Containers/Map.h"
+
+class UWorld;
+class UObjectContainer;
 
 /*
  * Base class for objects that need injection from World-bound container when the object is constructed.
@@ -17,40 +18,21 @@ public:
     /*
      * Assigns Container to World.
      */
-    static void SetContainerForWorld(class UWorld* World, UObjectContainer* Container);
+    static void SetContainerForWorld(UWorld* World, UObjectContainer* Container);
 
     /*
      * Clears container for given World.
      */
-    static void ClearContainerForWorld(class UWorld* World);
+    static void ClearContainerForWorld(UWorld* World);
 
     /*
      * Returns container of a given UWorld or nullptr if not found
      */
-    static UObjectContainer* GetContainerForWorld(class UWorld* World)
-    {
-        check(World);
-        return ContainerMap.FindRef(World);
-    }
+    static UObjectContainer* GetContainerForWorld(UWorld* World);
 
 protected:
     /*
      * Call this method from your subclass constructor.
      */
-    template <typename T>
-    void TryInitDependencies(T* Self)
-    {
-        UWorld* World = Self->GetWorld();
-        UObjectContainer** ContainerPtr = ContainerMap.Find(World);
-
-        if (ContainerPtr)
-        {
-            using Invoker = UnrealDI_Impl::TInitDependenciesInvoker<T, UnrealDI_Impl::TInitMethodTypologyDeducer< T >>;
-
-            Invoker::Invoke(Self, (*ContainerPtr)->Storage);
-        }
-    }
-
-private:
-    static TMap<UWorld*, UObjectContainer*> ContainerMap;
+    void TryInitDependencies(UObject* Self);
 };

@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "Templates/UnrealTypeTraits.h"
+#include "DI/Impl/StaticClass.h"
 
 namespace UnrealDI_Impl
 {
@@ -19,7 +19,7 @@ namespace RegistrationOperations
             static_assert(TIsDerivedFrom<typename TConfigurator::ImplType, TInterface>::Value, "Implementation type must be derived from Interface type");
 
             TConfigurator& This = StaticCast<TConfigurator&>(*this);
-            This.InterfaceTypes.AddUnique(TInterface::UClassType::StaticClass());
+            This.InterfaceTypes.AddUnique(TStaticClass<TInterface>::StaticClass());
 
             return This;
         }

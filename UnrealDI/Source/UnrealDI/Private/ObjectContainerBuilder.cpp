@@ -2,6 +2,7 @@
 
 #include "DI/ObjectContainerBuilder.h"
 #include "DI/ObjectContainer.h"
+#include "DI/Impl/DefaultInjectorProvider.h"
 
 UObjectContainer* FObjectContainerBuilder::Build(UObject* Outer)
 {
@@ -27,6 +28,13 @@ void FObjectContainerBuilder::AddRegistrationsToContainer(UObjectContainer* Cont
     using namespace UnrealDI_Impl;
 
     FRegistrationStorage& Storage = Container->Storage;
+
+    if (Storage.ParentStorage == nullptr)
+    {
+        // add default InjectorProvider before user provided registrations so it may be overriden.
+        // add only in Root container, so user doesn't have to add override in each nested container
+        Storage.AddRegistration(UInjectorProvider::StaticClass(), UDefaultInjectorProvider::StaticClass(), MakeShared<FLifetimeHandler_WeakSingleInstance>());
+    }
 
     // add user provided registrations
     for (auto& Registration : Registrations)

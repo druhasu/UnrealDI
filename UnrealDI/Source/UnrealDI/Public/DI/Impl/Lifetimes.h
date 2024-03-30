@@ -78,7 +78,7 @@ namespace UnrealDI_Impl
         }
 
     private:
-        UObject* Instance;
+        TObjectPtr<UObject> Instance;
     };
 
     class FLifetimeHandler_SingleInstance : public FLifetimeHandler
@@ -94,7 +94,7 @@ namespace UnrealDI_Impl
         static TSharedRef<FLifetimeHandler> Make() { return MakeShared<FLifetimeHandler_SingleInstance>(); }
 
     private:
-        UObject* Instance = nullptr;
+        TObjectPtr<UObject> Instance = nullptr;
     };
 
     class FLifetimeHandler_WeakSingleInstance : public FLifetimeHandler

@@ -47,6 +47,22 @@ void InjectOnConstructionSpec::Define()
         FInjectOnConstruction::ClearContainerForWorld(Helper.World);
     });
 
+    It("Should ReSet Container for World", [this]()
+    {
+        FTempWorldHelper Helper;
+
+        FObjectContainerBuilder Builder;
+        UObjectContainer* Container = Builder.Build(Helper.World);
+        UObjectContainer* Container2 = Builder.Build(Helper.World);
+
+        FInjectOnConstruction::SetContainerForWorld(Helper.World, Container);
+        FInjectOnConstruction::SetContainerForWorld(Helper.World, Container2);
+
+        TestEqual("Associated container", FInjectOnConstruction::GetContainerForWorld(Helper.World), Container2);
+
+        FInjectOnConstruction::ClearContainerForWorld(Helper.World);
+    });
+
     It("Should Clear Container for World", [this]()
     {
         FTempWorldHelper Helper;
@@ -65,6 +81,11 @@ void InjectOnConstructionSpec::Define()
         FTempWorldHelper Helper;
 
         TestNull("Associated container", FInjectOnConstruction::GetContainerForWorld(Helper.World));
+    });
+
+    It("Should Return nullptr Container for nullptr World", [this]()
+    {
+        TestNull("Associated container", FInjectOnConstruction::GetContainerForWorld(nullptr));
     });
 
     It("Should Inject Into UObject", [this]()
@@ -98,5 +119,53 @@ void InjectOnConstructionSpec::Define()
             AInjectActorWithComponent* Actor = World->SpawnActor<AInjectActorWithComponent>();
             return Actor->Component;
         });
+    });
+
+    It("Should use custom IInjectorProvider", [this]
+    {
+        FTempWorldHelper Helper;
+
+        UObjectContainer* OtherContainer = FBuildContainerHelper::Build();
+        UTestInjectorProvider* InjectorProvider = NewObject<UTestInjectorProvider>();
+        InjectorProvider->Injector = OtherContainer;
+
+        UObjectContainer* WorldContainer = FBuildContainerHelper::Build(Helper.World, [&](FObjectContainerBuilder& Builder)
+        {
+            // override injector used by FInjectOnConstruction
+            Builder.RegisterInstance(InjectorProvider).As<IInjectorProvider>();
+        });
+
+        FInjectOnConstruction::SetContainerForWorld(Helper.World, WorldContainer);
+
+        UInjectObject* Object = NewObject<UInjectObject>(Helper.World); // will call TryInitDependencies from constructor
+
+        TestEqual("Resolver", Object->Resolver, TScriptInterface<IResolver>(OtherContainer));
+
+        FInjectOnConstruction::ClearContainerForWorld(Helper.World);
+    });
+
+    It("Should use custom IInjectorProvider in Nested container from Parent container", [this]
+    {
+        FTempWorldHelper Helper;
+
+        UObjectContainer* OtherContainer = FBuildContainerHelper::Build();
+        UTestInjectorProvider* InjectorProvider = NewObject<UTestInjectorProvider>();
+        InjectorProvider->Injector = OtherContainer;
+
+        UObjectContainer* RootContainer = FBuildContainerHelper::Build(Helper.World, [&](FObjectContainerBuilder& Builder)
+        {
+            // override injector used by FInjectOnConstruction
+            Builder.RegisterInstance(InjectorProvider).As<IInjectorProvider>();
+        });
+
+        UObjectContainer* WorldContainer = FObjectContainerBuilder().BuildNested(*RootContainer);
+
+        FInjectOnConstruction::SetContainerForWorld(Helper.World, WorldContainer);
+
+        UInjectObject* Object = NewObject<UInjectObject>(Helper.World); // will call TryInitDependencies from constructor
+
+        TestEqual("Resolver", Object->Resolver, TScriptInterface<IResolver>(OtherContainer));
+
+        FInjectOnConstruction::ClearContainerForWorld(Helper.World);
     });
 }

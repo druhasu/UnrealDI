@@ -6,6 +6,8 @@
 #include "GameFramework/Actor.h"
 #include "Blueprint/UserWidget.h"
 #include "DI/InjectOnConstruction.h"
+#include "DI/IInjectorProvider.h"
+#include "DI/IResolver.h"
 #include "MockClasses_InjectOnConstruction.generated.h"
 
 /* UObject subclass of FInjectOnConstruction */
@@ -102,4 +104,16 @@ public:
 
     UPROPERTY()
     UInjectComponent* Component;
+};
+
+/* Returns specified Injector */
+UCLASS()
+class UTestInjectorProvider : public UObject, public IInjectorProvider
+{
+    GENERATED_BODY()
+public:
+    TScriptInterface<IInjector> GetInjector(UObject* InjectTarget) const override { return Injector; }
+
+    UPROPERTY()
+    TScriptInterface<IInjector> Injector;
 };

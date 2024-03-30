@@ -2,7 +2,7 @@
 
 #include "DI/Impl/RegistrationStorage.h"
 #include "DI/ObjectContainer.h"
-#include "DI/Impl/InstanceFactories.h"
+#include "DI/Impl/DefaultInstanceFactory.h"
 #include "DI/Impl/Lifetimes.h"
 #include "DI/Impl/DependenciesRegistry.h"
 #include "Algo/Copy.h"
@@ -31,15 +31,19 @@ void FRegistrationStorage::InitOwner(UObject* InOwner)
 
 void FRegistrationStorage::InitServices()
 {
-    InstanceFactories.Add(NewObject<UInstanceFactory_Object>(OuterForNewObject));
-    InstanceFactories.Add(NewObject<UInstanceFactory_Actor>(OuterForNewObject));
-    InstanceFactories.Add(NewObject<UInstanceFactory_UserWidget>(OuterForNewObject));
+    if (ParentStorage == nullptr)
+    {
+        // no point in creating Default Factory if we have parent storage. we can take it from parent
+        InstanceFactories.Add(GetMutableDefault<UDefaultInstanceFactory>());
+    }
 
+    // add user provided factories
     if (Registrations.Contains(UInstanceFactory::StaticClass()))
     {
         Algo::Copy(ResolveAll(UInstanceFactory::StaticClass()), InstanceFactories);
     }
 
+    // order by 'most recently added'
     Algo::Reverse(InstanceFactories);
 }
 
@@ -156,8 +160,8 @@ IInstanceFactory* FRegistrationStorage::FindInstanceFactory(UClass* Type) const
         }
     }
 
-    // should never happen
-    return nullptr;
+    // ParentStorage cannot not be null here
+    return ParentStorage->FindInstanceFactory(Type);
 }
 
 UObject* FRegistrationStorage::ResolveImpl(const FResolver& Resolver) const

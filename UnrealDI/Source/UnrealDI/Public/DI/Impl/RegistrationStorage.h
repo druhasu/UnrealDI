@@ -10,6 +10,7 @@
 
 class UObjectContainer;
 class IInstanceFactory;
+class FObjectContainerBuilder;
 
 template <typename T> class TFactory;
 
@@ -37,7 +38,7 @@ namespace UnrealDI_Impl
         void AddReferencedObjects(FReferenceCollector& Collector);
 
     private:
-        friend class FObjectContainerBuilder;
+        friend class ::FObjectContainerBuilder;
         template <typename T> friend struct TDependencyResolver;
         friend struct FFactoryCallProxy;
 
@@ -55,8 +56,8 @@ namespace UnrealDI_Impl
 
         void AppendObjectsCollection(UClass* Type, UObject**& Data) const;
 
-        UObject* Owner = nullptr;
-        UObject* OuterForNewObject = nullptr;
+        TObjectPtr<UObject> Owner = nullptr;
+        TObjectPtr<UObject> OuterForNewObject = nullptr;
         FRegistrationStorage* ParentStorage = nullptr;
 
         using FResolversArray = TArray<FResolver, TInlineAllocator<2>>;

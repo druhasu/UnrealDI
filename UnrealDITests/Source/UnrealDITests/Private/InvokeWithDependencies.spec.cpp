@@ -1,7 +1,7 @@
 // Copyright Andrei Sudarikov. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
-#include "Launch/Resources/Version.h"
+#include "Runtime/Launch/Resources/Version.h"
 #include "Tests/AutomationCommon.h"
 
 #include "DI/ObjectContainerBuilder.h"

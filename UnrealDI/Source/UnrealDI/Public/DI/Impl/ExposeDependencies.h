@@ -17,5 +17,5 @@ namespace UnrealDI_Impl
     };
 
 #define EXPOSE_DEPENDENCIES_INTERNAL(Class) \
-    UnrealDI_Impl::TExposeDependenciesHelper<Class> ANONYMOUS_VARIABLE(ExposeStruct);
+    UnrealDI_Impl::TExposeDependenciesHelper<Class> ANONYMOUS_VARIABLE(ExposeStruct_ ## Class);
 }

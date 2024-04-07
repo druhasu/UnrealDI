@@ -21,7 +21,7 @@ void ObjectContainerBuilderSpec::Define()
         
         UObjectContainer* Container = Builder.Build();
         
-        TestNotNull("Container not built", Container);
+        TestNotNull("Container", Container);
     });
 
     It("Should Create Nested Container", [this]()
@@ -32,7 +32,7 @@ void ObjectContainerBuilderSpec::Define()
         FObjectContainerBuilder Builder2;
         UObjectContainer* NestedContainer = Builder.BuildNested(*Container);
 
-        TestNotNull("NestedContainer not built", NestedContainer);
+        TestNotNull("NestedContainer", NestedContainer);
     });
 
     Describe("Register Type", [this]()
@@ -44,8 +44,8 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("UMockReader not registered", Container->IsRegistered<UMockReader>());
+            TestNotNull("Container", Container);
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
         It("Should Register Type As Self", [this]()
@@ -55,8 +55,8 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("UMockReader not registered", Container->IsRegistered<UMockReader>());
+            TestNotNull("Container", Container);
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
         It("Should Register Type As Interface", [this]()
@@ -66,9 +66,21 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("IReader not registered", Container->IsRegistered<IReader>());
-            TestFalse("UMockReader should not be registered", Container->IsRegistered<UMockReader>());
+            TestNotNull("Container", Container);
+            TestTrue("IReader is registered", Container->IsRegistered<IReader>());
+            TestFalse("UMockReader is registered", Container->IsRegistered<UMockReader>());
+        });
+
+        It("Should Register Type As Class", [this]()
+        {
+            FObjectContainerBuilder Builder;
+            Builder.RegisterType<UMockReader>().As<UMockReader>();
+
+            UObjectContainer* Container = Builder.Build();
+
+            TestNotNull("Container", Container);
+            TestFalse("IReader is registered", Container->IsRegistered<IReader>());
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
         It("Should Register Type As Interface And Self", [this]()
@@ -78,9 +90,9 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("UMockReader not registered", Container->IsRegistered<UMockReader>());
-            TestTrue("IReader not registered", Container->IsRegistered<IReader>());
+            TestNotNull("Container", Container);
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
+            TestTrue("IReader is registered", Container->IsRegistered<IReader>());
         });
 
         It("Should Register Type By Interfaces", [this]()
@@ -90,9 +102,9 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("IReader not registered", Container->IsRegistered<IReader>());
-            TestFalse("UMockReader should not be registered", Container->IsRegistered<UMockReader>());
+            TestNotNull("Container", Container);
+            TestTrue("IReader is registered", Container->IsRegistered<IReader>());
+            TestFalse("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
         It("Should Register Type By Interfaces And Self", [this]()
@@ -102,9 +114,9 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("UMockReader not registered", Container->IsRegistered<UMockReader>());
-            TestTrue("IReader not registered", Container->IsRegistered<IReader>());
+            TestNotNull("Container", Container);
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
+            TestTrue("IReader is registered", Container->IsRegistered<IReader>());
         });
 
         It("Should Register Type From Blueprint By Class", [this]
@@ -117,8 +129,8 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("UMockReader not registered", Container->IsRegistered<UMockReader>());
+            TestNotNull("Container", Container);
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
 
             UMockReader* Reader = Container->Resolve<UMockReader>();
             TestNotNull("Blueprint Class", Cast<UBlueprintGeneratedClass>(Reader->GetClass()));
@@ -133,8 +145,8 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("UMockReader not registered", Container->IsRegistered<UMockReader>());
+            TestNotNull("Container", Container);
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
 
             UMockReader* Reader = Container->Resolve<UMockReader>();
             TestNotNull("Blueprint Class", Cast<UBlueprintGeneratedClass>(Reader->GetClass()));
@@ -150,8 +162,8 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("UMockReader not registered", Container->IsRegistered<UMockReader>());
+            TestNotNull("Container", Container);
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
         It("Should Register Instance As Self", [this]()
@@ -161,8 +173,8 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("UMockReader not registered", Container->IsRegistered<UMockReader>());
+            TestNotNull("Container", Container);
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
         It("Should Register Instance As Interface", [this]()
@@ -172,9 +184,21 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("IReader not registered", Container->IsRegistered<IReader>());
-            TestFalse("UMockReader should not be registered", Container->IsRegistered<UMockReader>());
+            TestNotNull("Container", Container);
+            TestTrue("IReader is registered", Container->IsRegistered<IReader>());
+            TestFalse("UMockReader is registered", Container->IsRegistered<UMockReader>());
+        });
+
+        It("Should Register Instance As Class", [this]()
+        {
+            FObjectContainerBuilder Builder;
+            Builder.RegisterInstance(NewObject<UMockReader>()).As<UMockReader>();
+
+            UObjectContainer* Container = Builder.Build();
+
+            TestNotNull("Container", Container);
+            TestFalse("IReader is registered", Container->IsRegistered<IReader>());
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
         It("Should Register Instance As Interface And Self", [this]()
@@ -184,8 +208,9 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("IReader not registered", Container->IsRegistered<IReader>());
+            TestNotNull("Container", Container);
+            TestTrue("IReader is registered", Container->IsRegistered<IReader>());
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
         It("Should Register Instance By Interfaces", [this]()
@@ -195,9 +220,9 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("IReader not registered", Container->IsRegistered<IReader>());
-            TestFalse("UMockReader should not be registered", Container->IsRegistered<UMockReader>());
+            TestNotNull("Container", Container);
+            TestTrue("IReader is registered", Container->IsRegistered<IReader>());
+            TestFalse("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
         It("Should Register Instance By Interfaces And Self", [this]()
@@ -207,8 +232,9 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("IReader not registered", Container->IsRegistered<IReader>());
+            TestNotNull("Container", Container);
+            TestTrue("IReader is registered", Container->IsRegistered<IReader>());
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
     });
 
@@ -221,8 +247,8 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("UMockReader not registered", Container->IsRegistered<UMockReader>());
+            TestNotNull("Container", Container);
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
         It("Should Register Factory As Self", [this]()
@@ -232,8 +258,8 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("UMockReader not registered", Container->IsRegistered<UMockReader>());
+            TestNotNull("Container", Container);
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
         It("Should Register Factory As Interface", [this]()
@@ -243,9 +269,21 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("IReader not registered", Container->IsRegistered<IReader>());
-            TestFalse("UMockReader should not be registered", Container->IsRegistered<UMockReader>());
+            TestNotNull("Container", Container);
+            TestTrue("IReader is registered", Container->IsRegistered<IReader>());
+            TestFalse("UMockReader is registered", Container->IsRegistered<UMockReader>());
+        });
+
+        It("Should Register Factory As Class", [this]()
+        {
+            FObjectContainerBuilder Builder;
+            Builder.RegisterFactory<UMockReader>([]() { return NewObject<UMockReader>(); }).As<UMockReader>();
+
+            UObjectContainer* Container = Builder.Build();
+
+            TestNotNull("Container", Container);
+            TestFalse("IReader is registered", Container->IsRegistered<IReader>());
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
         It("Should Register Factory As Interface And Self", [this]()
@@ -255,8 +293,9 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("IReader not registered", Container->IsRegistered<IReader>());
+            TestNotNull("Container", Container);
+            TestTrue("IReader is registered", Container->IsRegistered<IReader>());
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
         It("Should Register Factory By Interfaces", [this]()
@@ -266,9 +305,9 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("IReader not registered", Container->IsRegistered<IReader>());
-            TestFalse("UMockReader should not be registered", Container->IsRegistered<UMockReader>());
+            TestNotNull("Container", Container);
+            TestTrue("IReader is registered", Container->IsRegistered<IReader>());
+            TestFalse("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
         It("Should Register Factory By Interfaces And Self", [this]()
@@ -278,8 +317,9 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("IReader not registered", Container->IsRegistered<IReader>());
+            TestNotNull("Container", Container);
+            TestTrue("IReader is registered", Container->IsRegistered<IReader>());
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
     });
 
@@ -292,8 +332,8 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("UMockReader not registered", Container->IsRegistered<UMockReader>());
+            TestNotNull("Container", Container);
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
         It("Should Register Default As Self", [this]()
@@ -303,8 +343,8 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("UMockReader not registered", Container->IsRegistered<UMockReader>());
+            TestNotNull("Container", Container);
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
         It("Should Register Default As Interface", [this]()
@@ -314,9 +354,21 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("IReader not registered", Container->IsRegistered<IReader>());
-            TestFalse("UMockReader should not be registered", Container->IsRegistered<UMockReader>());
+            TestNotNull("Container", Container);
+            TestTrue("IReader is registered", Container->IsRegistered<IReader>());
+            TestFalse("UMockReader is registered", Container->IsRegistered<UMockReader>());
+        });
+
+        It("Should Register Default As Class", [this]()
+        {
+            FObjectContainerBuilder Builder;
+            Builder.RegisterDefault<UMockReader>().As<UMockReader>();
+
+            UObjectContainer* Container = Builder.Build();
+
+            TestNotNull("Container", Container);
+            TestFalse("IReader is registered", Container->IsRegistered<IReader>());
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
         It("Should Register Default As Interface And Self", [this]()
@@ -326,8 +378,9 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("IReader not registered", Container->IsRegistered<IReader>());
+            TestNotNull("Container", Container);
+            TestTrue("IReader is registered", Container->IsRegistered<IReader>());
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
         It("Should Register Default By Interfaces", [this]()
@@ -337,9 +390,9 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("IReader not registered", Container->IsRegistered<IReader>());
-            TestFalse("UMockReader should not be registered", Container->IsRegistered<UMockReader>());
+            TestNotNull("Container", Container);
+            TestTrue("IReader is registered", Container->IsRegistered<IReader>());
+            TestFalse("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
         It("Should Register Default By Interfaces And Self", [this]()
@@ -349,8 +402,9 @@ void ObjectContainerBuilderSpec::Define()
 
             UObjectContainer* Container = Builder.Build();
 
-            TestNotNull("Container is nullptr", Container);
-            TestTrue("IReader not registered", Container->IsRegistered<IReader>());
+            TestNotNull("Container", Container);
+            TestTrue("IReader is registered", Container->IsRegistered<IReader>());
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
         It("Should Resolve Default Object", [this]()
@@ -361,7 +415,7 @@ void ObjectContainerBuilderSpec::Define()
             UObjectContainer* Container = Builder.Build();
             UMockReader* Resolved = Container->Resolve<UMockReader>();
 
-            TestEqual("Returned non default object", Resolved, GetMutableDefault<UMockReader>());
+            TestEqual("Resolved object", Resolved, GetMutableDefault<UMockReader>());
         });
     });
 }

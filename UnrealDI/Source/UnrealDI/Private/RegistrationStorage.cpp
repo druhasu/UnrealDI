@@ -181,7 +181,7 @@ UObject* FRegistrationStorage::ResolveImpl(const FResolver& Resolver) const
 
         if (auto Func = FDependenciesRegistry::FindInitFunction(EffectiveClass))
         {
-            Func(*Result, *this);
+            Func(*Result, *Cast<IResolver>(Owner));
         }
 
         Factory->FinalizeCreation(Result);

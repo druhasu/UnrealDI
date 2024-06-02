@@ -20,9 +20,9 @@ public:
     void PostInitProperties() override;
 
     // ~Begin IResolver interface
-    UObject* Resolve(class UClass* Type) override;
-    TObjectsCollection<UObject> ResolveAll(UClass* Type) override;
-    bool IsRegistered(class UClass* Type) override;
+    UObject* Resolve(class UClass* Type) const override;
+    TObjectsCollection<UObject> ResolveAll(UClass* Type) const override;
+    bool IsRegistered(class UClass* Type) const override;
 
     using IResolver::Resolve;
     using IResolver::ResolveAll;
@@ -43,7 +43,7 @@ public:
     template <typename TFunction>
     void InvokeWithDependencies(TFunction&& Function)
     {
-        UnrealDI_Impl::TFunctionWithDependenciesInvokerProvider<TFunction>::Invoker::Invoke(Storage, Forward<TFunction>(Function));
+        UnrealDI_Impl::TFunctionWithDependenciesInvokerProvider<TFunction>::Invoker::Invoke(*this, Forward<TFunction>(Function));
     }
 
 private:

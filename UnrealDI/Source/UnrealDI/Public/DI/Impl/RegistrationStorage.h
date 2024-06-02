@@ -12,14 +12,9 @@ class UObjectContainer;
 class IInstanceFactory;
 class FObjectContainerBuilder;
 
-template <typename T> class TFactory;
-
 namespace UnrealDI_Impl
 {
     class FLifetimeHandler;
-    class FRegistrationConfiguratorBase;
-    template <typename T> struct TDependencyResolver;
-    template <typename T> class TRegistrationConfigurator_ForType;
 
     class UNREALDI_API FRegistrationStorage
     {
@@ -39,8 +34,6 @@ namespace UnrealDI_Impl
 
     private:
         friend class ::FObjectContainerBuilder;
-        template <typename T> friend struct TDependencyResolver;
-        friend struct FFactoryCallProxy;
 
         struct FResolver
         {

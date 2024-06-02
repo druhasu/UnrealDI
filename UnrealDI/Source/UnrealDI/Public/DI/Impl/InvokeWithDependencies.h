@@ -11,7 +11,7 @@ namespace UnrealDI_Impl
     {
         /* Invokes given function with args injected from Container */
         template <typename TFunction>
-        static void Invoke(FRegistrationStorage& Resolver, TFunction&& Function)
+        static void Invoke(const IResolver& Resolver, TFunction&& Function)
         {
             Function(UnrealDI_Impl::TDependencyResolverInvoker<TArgs>(Resolver)...);
         }

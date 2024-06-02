@@ -6,15 +6,14 @@
 
 class UObject;
 class UClass;
+class IResolver;
 
 namespace UnrealDI_Impl
 {
-    class FRegistrationStorage;
-
     class UNREALDI_API FDependenciesRegistry
     {
     public:
-        using FInitFunctionPtr = void (*)(UObject& ConstructedObject, const FRegistrationStorage& Container);
+        using FInitFunctionPtr = void (*)(UObject& ConstructedObject, const IResolver& Container);
 
         template <typename T>
         static void ExposeDependencies();

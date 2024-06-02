@@ -30,59 +30,59 @@ void DependenciesInjectionSpec::Define()
     {
         auto Resolved = RegisterAndResolve<UNeedObjectInstance>();
 
-        TestNotNull("Resolve returned nullptr", Resolved);
-        TestNotNull("Dependency not injected", Resolved->Instance);
+        TestNotNull("Resolved object", Resolved);
+        TestNotNull("Injected dependency", Resolved->Instance);
     });
 
     It("Should Inject Concrete Type via TObjectPtr", [this]()
     {
         auto Resolved = RegisterAndResolve<UNeedObjectPtrInstance>();
 
-        TestNotNull("Resolve returned nullptr", Resolved);
-        TestNotNull("Dependency not injected", Resolved->Instance.Get());
+        TestNotNull("Resolved object", Resolved);
+        TestNotNull("Injected dependency", Resolved->Instance.Get());
     });
 
     It("Should Inject Interface", [this]()
     {
         auto Resolved = RegisterAndResolve<UNeedInterfaceInstance>();
 
-        TestNotNull("Resolve returned nullptr", Resolved);
-        TestNotNull("Dependency not injected", Resolved->Instance.GetInterface());
+        TestNotNull("Resolved object", Resolved);
+        TestNotNull("Injected dependency", Resolved->Instance.GetInterface());
     });
 
     It("Should Inject Concrete Type Factory", [this]()
     {
         auto Resolved = RegisterAndResolve<UNeedObjectFactory>();
 
-        TestNotNull("Resolve returned nullptr", Resolved);
-        TestTrue("Dependency not injected", Resolved->Factory.IsValid());
+        TestNotNull("Resolved object", Resolved);
+        TestTrue("Factory is valid", Resolved->Factory.IsValid());
 
         auto FromFactory = Resolved->Factory();
-        TestNotNull("Factory returned nullptr", FromFactory);
+        TestNotNull("Factory resolved object", FromFactory);
     });
 
     It("Should Inject Interface Factory", [this]()
     {
         auto Resolved = RegisterAndResolve<UNeedInterfaceFactory>();
 
-        TestNotNull("Resolve returned nullptr", Resolved);
-        TestTrue("Dependency not injected", Resolved->Factory.IsValid());
+        TestNotNull("Resolved object", Resolved);
+        TestTrue("Factory is valid", Resolved->Factory.IsValid());
 
         auto FromFactory = Resolved->Factory();
-        TestNotNull("Factory returned nullptr", FromFactory.GetInterface());
+        TestNotNull("Factory resolved object", FromFactory.GetInterface());
     });
 
     It("Should Inject Concrete Type Collection", [this]()
     {
         auto Resolved = RegisterAndResolve<UNeedObjectCollection>();
 
-        TestNotNull("Resolve returned nullptr", Resolved);
-        TestTrue("Collection not valid", Resolved->Collection.IsValid());
-        TestTrue("Collection is empty", Resolved->Collection.Num() > 0);
+        TestNotNull("Resolved object", Resolved);
+        TestTrue("Collection is valid", Resolved->Collection.IsValid());
+        TestTrue("Collection is not empty", Resolved->Collection.Num() > 0);
 
         for (UMockReader* Object : Resolved->Collection)
         {
-            TestNotNull("Collection contains nullptr", Object);
+            TestNotNull("Object in collection", Object);
         }
     });
 
@@ -90,14 +90,22 @@ void DependenciesInjectionSpec::Define()
     {
         auto Resolved = RegisterAndResolve<UNeedInterfaceCollection>();
 
-        TestNotNull("Resolve returned nullptr", Resolved);
-        TestTrue("Collection not valid", Resolved->Collection.IsValid());
-        TestTrue("Collection is empty", Resolved->Collection.Num() > 0);
+        TestNotNull("Resolved object", Resolved);
+        TestTrue("Collection is valid", Resolved->Collection.IsValid());
+        TestTrue("Collection is not empty", Resolved->Collection.Num() > 0);
 
         for (TScriptInterface<IReader> Interface : Resolved->Collection)
         {
-            TestNotNull("Collection contains nullptr", Interface.GetInterface());
+            TestNotNull("Object in collection", Interface.GetInterface());
         }
+    });
+
+    It("Should Inject Custom dependency", [this]
+    {
+        auto Resolved = RegisterAndResolve<UNeedTestDependency>();
+
+        TestNotNull("Resolved object", Resolved);
+        TestNotNull("Injected dependency", Resolved->Reader);
     });
 
     It("Should Inject Auto Registered Type", [this]()
@@ -110,7 +118,7 @@ void DependenciesInjectionSpec::Define()
         // this call should auto register UMockReader due to dependency from UNeedObjectInstance
         auto Resolved = Container->Resolve<UNeedObjectInstance>();
 
-        TestNotNull("Resolve returned nullptr", Resolved);
-        TestNotNull("Dependency not injected", Resolved->Instance);
+        TestNotNull("Resolved object", Resolved);
+        TestNotNull("Injected dependency", Resolved->Instance);
     });
 }

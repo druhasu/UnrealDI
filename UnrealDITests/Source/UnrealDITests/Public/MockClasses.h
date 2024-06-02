@@ -4,7 +4,7 @@
 
 #include "DI/Factory.h"
 #include "DI/ObjectsCollection.h"
-#include "Runtime/Launch/Resources/Version.h"
+#include "TestDependency.h"
 #include "MockClasses.generated.h"
 
 class IReader;
@@ -106,4 +106,19 @@ public:
     }
 
     TObjectsCollection<IReader> Collection;
+};
+
+/* Requests custom dependency type */
+UCLASS()
+class UNeedTestDependency : public UObject
+{
+    GENERATED_BODY()
+
+public:
+    void InitDependencies(TTestDependency<UMockReader> InReader)
+    {
+        Reader = InReader.Object;
+    }
+
+    UMockReader* Reader;
 };

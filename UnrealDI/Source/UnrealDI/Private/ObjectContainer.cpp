@@ -14,21 +14,21 @@ void UObjectContainer::PostInitProperties()
     Storage.InitOwner(this);
 }
 
-UObject* UObjectContainer::Resolve(UClass* Type)
+UObject* UObjectContainer::Resolve(UClass* Type) const
 {
     checkf(Type, TEXT("Requested object of null type"));
 
     return Storage.Resolve(Type);
 }
 
-TObjectsCollection<UObject> UObjectContainer::ResolveAll(UClass* Type)
+TObjectsCollection<UObject> UObjectContainer::ResolveAll(UClass* Type) const
 {
     checkf(Type, TEXT("Requested object of null type"));
 
     return Storage.ResolveAll(Type);
 }
 
-bool UObjectContainer::IsRegistered(UClass* Type)
+bool UObjectContainer::IsRegistered(UClass* Type) const
 {
     checkf(Type, TEXT("Requested object of null type"));
 
@@ -44,7 +44,7 @@ bool UObjectContainer::Inject(UObject* Object) const
     auto InitFunction = UnrealDI_Impl::FDependenciesRegistry::FindInitFunction(Class);
     if (InitFunction != nullptr)
     {
-        InitFunction(*Object, Storage);
+        InitFunction(*Object, *this);
         return true;
     }
 

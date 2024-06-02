@@ -21,12 +21,12 @@ class UNREALDI_API IResolver
 
 public:
     /* Returns instance of given Type */
-    virtual UObject* Resolve(class UClass* Type) = 0;
+    virtual UObject* Resolve(class UClass* Type) const = 0;
 
     /* Returns instance of given Type */
     template <typename T>
     typename TEnableIf<TIsDerivedFrom<T, UObject>::Value, T*>::Type
-        Resolve()
+        Resolve() const
     {
         return (T*)Resolve(UnrealDI_Impl::TStaticClass< T >::StaticClass());
     }
@@ -34,29 +34,29 @@ public:
     /* Returns instance of given Interface */
     template <typename T>
     typename TEnableIf<UnrealDI_Impl::TIsUInterface< T >::Value, TScriptInterface< T >>::Type
-        Resolve()
+        Resolve() const
     {
         return Resolve(UnrealDI_Impl::TStaticClass< T >::StaticClass());
     }
 
 
     /* Returns all instances of given Type */
-    virtual TObjectsCollection<UObject> ResolveAll(UClass* Type) = 0;
+    virtual TObjectsCollection<UObject> ResolveAll(UClass* Type) const = 0;
 
     /* Returns all instances of given Type */
     template <typename T>
-    TObjectsCollection<T> ResolveAll()
+    TObjectsCollection<T> ResolveAll() const
     {
         return TObjectsCollection<T>(ResolveAll(UnrealDI_Impl::TStaticClass< T >::StaticClass()));
     }
 
 
     /* Returns true if given type is Registered and can be resolved */
-    virtual bool IsRegistered(class UClass* Type) = 0;
+    virtual bool IsRegistered(class UClass* Type) const = 0;
 
     /* Returns true if given type is Registered and can be resolved */
     template <typename T>
-    bool IsRegistered()
+    bool IsRegistered() const
     {
         return IsRegistered(UnrealDI_Impl::TStaticClass<T>::StaticClass());
     }

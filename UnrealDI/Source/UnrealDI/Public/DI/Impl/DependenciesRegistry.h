@@ -7,6 +7,7 @@
 class UObject;
 class UClass;
 class IResolver;
+class UFunction;
 
 namespace UnrealDI_Impl
 {
@@ -15,12 +16,17 @@ namespace UnrealDI_Impl
     public:
         using FInitFunctionPtr = void (*)(UObject& ConstructedObject, const IResolver& Container);
 
+        static void Init();
+        static void Shutdown();
+
         template <typename T>
         static void ExposeDependencies();
 
         static void ProcessPendingRegistrations();
 
-        static FInitFunctionPtr FindInitFunction(UClass* Class);
+        static void FindInitFunctions(UClass* Class, FInitFunctionPtr& OutNativeInitFunction, UFunction*& OutBlueprintInitFunction);
+
+        static FName MakeInitDependenciesFunctionName(UClass* Class);
 
     private:
         using FClassGetter = UClass* (*)();
@@ -31,9 +37,19 @@ namespace UnrealDI_Impl
             FInitFunctionPtr InitFunction;
         };
 
-        static TArray<FUnprocessedEntry>& GetUnprocessedEntries();
+        struct FCacheEntry
+        {
+            FInitFunctionPtr NativeInitFunction = nullptr;
+            UFunction* BlueprintInitFunction = nullptr;
+        };
 
-        static TMap<UClass*, FInitFunctionPtr> InitFunctions;
+        static TArray<FUnprocessedEntry>& GetUnprocessedEntries();
+        static FCacheEntry* AddInitFunctionsToCache(UClass* Class);
+        static void PostGarbageCollect();
+
+        static inline TMap<UClass*, FInitFunctionPtr> NativeInitFunctions;
+        static inline TMap<TWeakObjectPtr<UClass>, FCacheEntry> CachedInitFunctions;
+        static inline FDelegateHandle PostGarbageCollectHandle;
     };
 }
 

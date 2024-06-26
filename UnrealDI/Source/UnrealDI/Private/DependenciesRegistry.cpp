@@ -2,7 +2,15 @@
 
 #include "DI/Impl/DependenciesRegistry.h"
 
-TMap<UClass*, UnrealDI_Impl::FDependenciesRegistry::FInitFunctionPtr> UnrealDI_Impl::FDependenciesRegistry::InitFunctions;
+void UnrealDI_Impl::FDependenciesRegistry::Init()
+{
+    PostGarbageCollectHandle = FCoreUObjectDelegates::GetPostGarbageCollect().AddStatic(&FDependenciesRegistry::PostGarbageCollect);
+}
+
+void UnrealDI_Impl::FDependenciesRegistry::Shutdown()
+{
+    FCoreUObjectDelegates::GetPostGarbageCollect().Remove(PostGarbageCollectHandle);
+}
 
 void UnrealDI_Impl::FDependenciesRegistry::ProcessPendingRegistrations()
 {
@@ -12,38 +20,80 @@ void UnrealDI_Impl::FDependenciesRegistry::ProcessPendingRegistrations()
         return;
     }
 
-    if (GetUnprocessedEntries().Num() > 0)
+    TArray<FUnprocessedEntry>& UnprocessedEntries = GetUnprocessedEntries();
+    if (UnprocessedEntries.Num() > 0)
     {
-        for (const FUnprocessedEntry& Entry : GetUnprocessedEntries())
+        for (const FUnprocessedEntry& Entry : UnprocessedEntries)
         {
-            InitFunctions.Emplace(Entry.ClassGetter(), Entry.InitFunction);
+            NativeInitFunctions.Emplace(Entry.ClassGetter(), Entry.InitFunction);
         }
 
-        GetUnprocessedEntries().Empty();
+        UnprocessedEntries.Empty();
     }
 }
 
-UnrealDI_Impl::FDependenciesRegistry::FInitFunctionPtr UnrealDI_Impl::FDependenciesRegistry::FindInitFunction(UClass* Class)
+void UnrealDI_Impl::FDependenciesRegistry::FindInitFunctions(UClass* Class, FInitFunctionPtr& OutNativeInitFunction, UFunction*& OutBlueprintInitFunction)
 {
-    // find native parent, because we store only those in InitFunctions
-    while (!Class->IsNative())
+    // check cache first
+    FCacheEntry* CacheEntry = CachedInitFunctions.Find(Class);
+
+    if (!CacheEntry)
     {
-        Class = Class->GetSuperClass();
+        CacheEntry = AddInitFunctionsToCache(Class);
     }
 
-    // try find an InitFunction for a class
-    FInitFunctionPtr Result = nullptr;
-    while (!Result && Class)
-    {
-        Result = InitFunctions.FindRef(Class);
-        Class = Class->GetSuperClass();
-    }
+    OutNativeInitFunction = CacheEntry->NativeInitFunction;
+    OutBlueprintInitFunction = CacheEntry->BlueprintInitFunction;
+}
 
-    return Result;
+FName UnrealDI_Impl::FDependenciesRegistry::MakeInitDependenciesFunctionName(UClass* Class)
+{
+    return FName(FString::Printf(TEXT("InitDependencies_%s"), *Class->GetName()));
 }
 
 TArray<UnrealDI_Impl::FDependenciesRegistry::FUnprocessedEntry>& UnrealDI_Impl::FDependenciesRegistry::GetUnprocessedEntries()
 {
     static TArray<FUnprocessedEntry> Result;
     return Result;
+}
+
+UnrealDI_Impl::FDependenciesRegistry::FCacheEntry* UnrealDI_Impl::FDependenciesRegistry::AddInitFunctionsToCache(UClass* Class)
+{
+    UClass* ClassIterator = Class;
+    FCacheEntry NewEntry;
+
+    while ((!NewEntry.NativeInitFunction || !NewEntry.BlueprintInitFunction) && ClassIterator)
+    {
+        if (!ClassIterator->IsNative())
+        {
+            if (!NewEntry.BlueprintInitFunction)
+            {
+                FName FunctionName = MakeInitDependenciesFunctionName(ClassIterator);
+
+                NewEntry.BlueprintInitFunction = ClassIterator->FindFunctionByName(FunctionName);
+            }
+        }
+        else
+        {
+            if (!NewEntry.NativeInitFunction)
+            {
+                NewEntry.NativeInitFunction = NativeInitFunctions.FindRef(ClassIterator);
+            }
+        }
+
+        ClassIterator = ClassIterator->GetSuperClass();
+    }
+
+    return &CachedInitFunctions.Add(Class, MoveTemp(NewEntry));
+}
+
+void UnrealDI_Impl::FDependenciesRegistry::PostGarbageCollect()
+{
+    for (auto It = CachedInitFunctions.CreateIterator(); It; ++It)
+    {
+        if (!It.Key().IsValid())
+        {
+            It.RemoveCurrent();
+        }
+    }
 }

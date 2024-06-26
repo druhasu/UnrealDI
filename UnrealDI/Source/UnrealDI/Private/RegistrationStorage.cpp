@@ -80,6 +80,66 @@ TObjectsCollection<UObject> FRegistrationStorage::ResolveAll(UClass* Type) const
     return TObjectsCollection<UObject>(Data, TotalResolvers);
 }
 
+bool FRegistrationStorage::Inject(UObject* Object) const
+{
+    UClass* Class = Object->GetClass();
+
+    FDependenciesRegistry::FInitFunctionPtr NativeInitFunction = nullptr;
+    UFunction* BlueprintInitFunction = nullptr;
+
+    FDependenciesRegistry::FindInitFunctions(Class, NativeInitFunction, BlueprintInitFunction);
+
+    // first - call native InitDependencies
+    if (NativeInitFunction != nullptr)
+    {
+        NativeInitFunction(*Object, *Cast<IResolver>(GetOwner()));
+    }
+
+    // then -  call blueprint InitDependencies
+    if (BlueprintInitFunction != nullptr)
+    {
+        uint8* Arguments = (uint8*)FMemory_Alloca(BlueprintInitFunction->ParmsSize);
+        FMemory::Memzero(Arguments, BlueprintInitFunction->ParmsSize);
+
+        uint8* CurrentArgument = Arguments;
+
+        // prepare arguments
+        for (TFieldIterator<FProperty> It(BlueprintInitFunction, EFieldIterationFlags::None); It; ++It)
+        {
+            if (It->HasAllPropertyFlags(CPF_Parm))
+            {
+                if (FObjectProperty* ObjectProperty = CastField<FObjectProperty>(*It))
+                {
+                    new (CurrentArgument) TObjectPtr<UObject>(Resolve(ObjectProperty->PropertyClass));
+                    CurrentArgument += sizeof(TObjectPtr<UObject>);
+                }
+                else if (FInterfaceProperty* InterfaceProperty = CastField<FInterfaceProperty>(*It))
+                {
+                    UObject* Result = Resolve(InterfaceProperty->InterfaceClass);
+                    new (CurrentArgument) FScriptInterface(Result, Result->GetInterfaceAddress(InterfaceProperty->InterfaceClass));
+                    CurrentArgument += sizeof(FScriptInterface);
+                }
+            }
+        }
+
+        check(CurrentArgument - Arguments == BlueprintInitFunction->ParmsSize);
+
+        Object->ProcessEvent(BlueprintInitFunction, Arguments);
+    }
+
+    return NativeInitFunction || BlueprintInitFunction;
+}
+
+bool FRegistrationStorage::CanInject(UClass* Class) const
+{
+    FDependenciesRegistry::FInitFunctionPtr NativeInitFunction = nullptr;
+    UFunction* BlueprintInitFunction = nullptr;
+
+    FDependenciesRegistry::FindInitFunctions(Class, NativeInitFunction, BlueprintInitFunction);
+
+    return NativeInitFunction || BlueprintInitFunction;
+}
+
 bool FRegistrationStorage::IsRegistered(UClass* Type) const
 {
     if (Registrations.Contains(Type))
@@ -179,10 +239,7 @@ UObject* FRegistrationStorage::ResolveImpl(const FResolver& Resolver) const
         Result = Factory->Create(OuterForNewObject, EffectiveClass);
         checkf(Result != nullptr, TEXT("IInstanceFactory must never return nullptr. Check project specific implementation"));
 
-        if (auto Func = FDependenciesRegistry::FindInitFunction(EffectiveClass))
-        {
-            Func(*Result, *Cast<IResolver>(Owner));
-        }
+        Inject(Result);
 
         Factory->FinalizeCreation(Result);
 

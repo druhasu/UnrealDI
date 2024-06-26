@@ -28,6 +28,10 @@ namespace UnrealDI_Impl
 
         TObjectsCollection<UObject> ResolveAll(UClass* Type) const;
 
+        bool Inject(UObject* Object) const;
+
+        bool CanInject(UClass* Class) const;
+
         bool IsRegistered(UClass* Type) const;
 
         void AddReferencedObjects(FReferenceCollector& Collector);

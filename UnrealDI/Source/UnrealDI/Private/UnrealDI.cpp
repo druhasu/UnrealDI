@@ -9,12 +9,14 @@ public:
     void StartupModule() override
     {
         FModuleManager::Get().OnModulesChanged().AddRaw(this, &FUnrealDIModuleImpl::RegisterDependencies);
+        UnrealDI_Impl::FDependenciesRegistry::Init();
         UnrealDI_Impl::FDependenciesRegistry::ProcessPendingRegistrations();
     }
 
     void ShutdownModule() override
     {
         FModuleManager::Get().OnModulesChanged().RemoveAll(this);
+        UnrealDI_Impl::FDependenciesRegistry::Shutdown();
     }
 
 private:

@@ -6,8 +6,6 @@
 
 namespace UnrealDI_Impl
 {
-    class FRegistrationStorage;
-
     class FLifetimeHandler
     {
     public:

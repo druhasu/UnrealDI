@@ -24,80 +24,160 @@ T* RegisterAndResolve()
     return Container->Resolve<T>();
 }
 
+template <typename T>
+T* RegisterAndResolveOptional()
+{
+    FObjectContainerBuilder Builder;
+    Builder.RegisterType<T>();
+
+    UObjectContainer* Container = Builder.Build();
+
+    return Container->Resolve<T>();
+}
+
 void DependenciesInjectionSpec::Define()
 {
-    It("Should Inject Concrete Type", [this]()
+    Describe("Instance", [this]
     {
-        auto Resolved = RegisterAndResolve<UNeedObjectInstance>();
-
-        TestNotNull("Resolved object", Resolved);
-        TestNotNull("Injected dependency", Resolved->Instance);
-    });
-
-    It("Should Inject Concrete Type via TObjectPtr", [this]()
-    {
-        auto Resolved = RegisterAndResolve<UNeedObjectPtrInstance>();
-
-        TestNotNull("Resolved object", Resolved);
-        TestNotNull("Injected dependency", Resolved->Instance.Get());
-    });
-
-    It("Should Inject Interface", [this]()
-    {
-        auto Resolved = RegisterAndResolve<UNeedInterfaceInstance>();
-
-        TestNotNull("Resolved object", Resolved);
-        TestNotNull("Injected dependency", Resolved->Instance.GetInterface());
-    });
-
-    It("Should Inject Concrete Type Factory", [this]()
-    {
-        auto Resolved = RegisterAndResolve<UNeedObjectFactory>();
-
-        TestNotNull("Resolved object", Resolved);
-        TestTrue("Factory is valid", Resolved->Factory.IsValid());
-
-        auto FromFactory = Resolved->Factory();
-        TestNotNull("Factory resolved object", FromFactory);
-    });
-
-    It("Should Inject Interface Factory", [this]()
-    {
-        auto Resolved = RegisterAndResolve<UNeedInterfaceFactory>();
-
-        TestNotNull("Resolved object", Resolved);
-        TestTrue("Factory is valid", Resolved->Factory.IsValid());
-
-        auto FromFactory = Resolved->Factory();
-        TestNotNull("Factory resolved object", FromFactory.GetInterface());
-    });
-
-    It("Should Inject Concrete Type Collection", [this]()
-    {
-        auto Resolved = RegisterAndResolve<UNeedObjectCollection>();
-
-        TestNotNull("Resolved object", Resolved);
-        TestTrue("Collection is valid", Resolved->Collection.IsValid());
-        TestTrue("Collection is not empty", Resolved->Collection.Num() > 0);
-
-        for (UMockReader* Object : Resolved->Collection)
+        It("Should Inject Concrete Type", [this]()
         {
-            TestNotNull("Object in collection", Object);
-        }
+            auto Resolved = RegisterAndResolve<UNeedObjectInstance>();
+
+            TestNotNull("Resolved object", Resolved);
+            TestNotNull("Injected dependency", Resolved->Instance);
+        });
+
+        It("Should Inject Concrete Type via TObjectPtr", [this]()
+        {
+            auto Resolved = RegisterAndResolve<UNeedObjectPtrInstance>();
+
+            TestNotNull("Resolved object", Resolved);
+            TestNotNull("Injected dependency", Resolved->Instance.Get());
+        });
+
+        It("Should Inject Interface", [this]()
+        {
+            auto Resolved = RegisterAndResolve<UNeedInterfaceInstance>();
+
+            TestNotNull("Resolved object", Resolved);
+            TestNotNull("Injected dependency", Resolved->Instance.GetInterface());
+        });
+
+        It("Should Inject optional Interface if registered", [this]()
+        {
+            auto Resolved = RegisterAndResolve<UNeedOptionalInterfaceInstance>();
+
+            TestNotNull("Resolved object", Resolved);
+            TestTrue("Injected dependency is set", Resolved->Instance.IsSet());
+            TestNotNull("Injected dependency", Resolved->Instance.GetValue().GetInterface());
+        });
+
+        It("Should not Inject optional Interface if not registered", [this]()
+        {
+            auto Resolved = RegisterAndResolveOptional<UNeedOptionalInterfaceInstance>();
+
+            TestNotNull("Resolved object", Resolved);
+            TestFalse("Injected dependency is set", Resolved->Instance.IsSet());
+        });
     });
 
-    It("Should Inject Interface Collection", [this]()
+    Describe("Collection", [this]
     {
-        auto Resolved = RegisterAndResolve<UNeedInterfaceCollection>();
-
-        TestNotNull("Resolved object", Resolved);
-        TestTrue("Collection is valid", Resolved->Collection.IsValid());
-        TestTrue("Collection is not empty", Resolved->Collection.Num() > 0);
-
-        for (TScriptInterface<IReader> Interface : Resolved->Collection)
+        It("Should Inject Concrete Type Collection", [this]()
         {
-            TestNotNull("Object in collection", Interface.GetInterface());
-        }
+            auto Resolved = RegisterAndResolve<UNeedObjectCollection>();
+
+            TestNotNull("Resolved object", Resolved);
+            TestTrue("Collection is valid", Resolved->Collection.IsValid());
+            TestTrue("Collection is not empty", Resolved->Collection.Num() > 0);
+
+            for (UMockReader* Object : Resolved->Collection)
+            {
+                TestNotNull("Object in collection", Object);
+            }
+        });
+
+        It("Should Inject Interface Collection", [this]()
+        {
+            auto Resolved = RegisterAndResolve<UNeedInterfaceCollection>();
+
+            TestNotNull("Resolved object", Resolved);
+            TestTrue("Collection is valid", Resolved->Collection.IsValid());
+            TestTrue("Collection is not empty", Resolved->Collection.Num() > 0);
+
+            for (TScriptInterface<IReader> Interface : Resolved->Collection)
+            {
+                TestNotNull("Object in collection", Interface.GetInterface());
+            }
+        });
+
+        It("Should Inject optional Interface Collection if registered", [this]()
+        {
+            auto Resolved = RegisterAndResolve<UNeedOptionalInterfaceCollection>();
+
+            TestNotNull("Resolved object", Resolved);
+            TestTrue("Injected dependency is set", Resolved->Collection.IsSet());
+            TestTrue("Collection is valid", Resolved->Collection.GetValue().IsValid());
+            TestTrue("Collection is not empty", Resolved->Collection.GetValue().Num() > 0);
+
+            for (TScriptInterface<IReader> Interface : Resolved->Collection.GetValue())
+            {
+                TestNotNull("Object in collection", Interface.GetInterface());
+            }
+        });
+
+        It("Should not Inject optional Interface Collection if not registered", [this]()
+        {
+            auto Resolved = RegisterAndResolveOptional<UNeedOptionalInterfaceCollection>();
+
+            TestNotNull("Resolved object", Resolved);
+            TestFalse("Injected dependency is set", Resolved->Collection.IsSet());
+        });
+    });
+
+    Describe("Factory", [this]
+    {
+        It("Should Inject Concrete Type Factory", [this]()
+        {
+            auto Resolved = RegisterAndResolve<UNeedObjectFactory>();
+
+            TestNotNull("Resolved object", Resolved);
+            TestTrue("Factory is valid", Resolved->Factory.IsValid());
+
+            auto FromFactory = Resolved->Factory();
+            TestNotNull("Factory resolved object", FromFactory);
+        });
+
+        It("Should Inject Interface Factory", [this]()
+        {
+            auto Resolved = RegisterAndResolve<UNeedInterfaceFactory>();
+
+            TestNotNull("Resolved object", Resolved);
+            TestTrue("Factory is valid", Resolved->Factory.IsValid());
+
+            auto FromFactory = Resolved->Factory();
+            TestNotNull("Factory resolved object", FromFactory.GetInterface());
+        });
+
+        It("Should Inject optional Interface Factory if registered", [this]()
+        {
+            auto Resolved = RegisterAndResolve<UNeedOptionalInterfaceFactory>();
+
+            TestNotNull("Resolved object", Resolved);
+            TestTrue("Injected dependency is set", Resolved->Factory.IsSet());
+            TestTrue("Factory is valid", Resolved->Factory.GetValue().IsValid());
+
+            auto FromFactory = Resolved->Factory.GetValue()();
+            TestNotNull("Factory resolved object", FromFactory.GetInterface());
+        });
+
+        It("Should not Inject optional Interface Factory if not registered", [this]()
+        {
+            auto Resolved = RegisterAndResolveOptional<UNeedOptionalInterfaceFactory>();
+
+            TestNotNull("Resolved object", Resolved);
+            TestFalse("Injected dependency is set", Resolved->Factory.IsSet());
+        });
     });
 
     It("Should Inject Custom dependency", [this]

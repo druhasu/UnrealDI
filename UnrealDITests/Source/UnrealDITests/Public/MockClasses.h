@@ -122,3 +122,45 @@ public:
 
     UMockReader* Reader;
 };
+
+/* Requests optional instance of Interface type */
+UCLASS()
+class UNREALDITESTS_API UNeedOptionalInterfaceInstance : public UObject
+{
+    GENERATED_BODY()
+public:
+    void InitDependencies(TOptional<TScriptInterface<IReader>>&& ReaderInterface)
+    {
+        Instance = ReaderInterface;
+    }
+
+    TOptional<TScriptInterface<IReader>> Instance;
+};
+
+/* Requests optional factory of Interface type */
+UCLASS()
+class UNREALDITESTS_API UNeedOptionalInterfaceFactory : public UObject
+{
+    GENERATED_BODY()
+public:
+    void InitDependencies(TOptional<TFactory<IReader>>&& ReaderFactory)
+    {
+        Factory = MoveTemp(ReaderFactory);
+    }
+
+    TOptional<TFactory<IReader>> Factory;
+};
+
+/* Requests optional Collection of Interface types */
+UCLASS()
+class UNREALDITESTS_API UNeedOptionalInterfaceCollection : public UObject
+{
+    GENERATED_BODY()
+public:
+    void InitDependencies(TOptional<TObjectsCollection<IReader>>&& ReaderCollection)
+    {
+        Collection = MoveTemp(ReaderCollection);
+    }
+
+    TOptional<TObjectsCollection<IReader>> Collection;
+};

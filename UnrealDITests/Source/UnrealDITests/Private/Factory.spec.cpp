@@ -1,7 +1,6 @@
 // Copyright Andrei Sudarikov. All Rights Reserved.
 
 #include "Misc/AutomationTest.h"
-#include "Tests/AutomationCommon.h"
 
 #include "DI/Factory.h"
 #include "DI/ObjectContainer.h"
@@ -17,7 +16,7 @@ void FFactorySpec::Define()
     It("Should return UObject", [this]
     {
         UObjectContainer* Container = FBuildContainerHelper::Build();
-        TFactory<UMockReader> Factory(Container);
+        TFactory<UMockReader> Factory = Container->ResolveFactory<UMockReader>();
 
         TestTrue("Factory is Valid", Factory);
         TestTrue("Factory is Valid", Factory.IsValid());
@@ -29,7 +28,7 @@ void FFactorySpec::Define()
     It("Should return TScriptInterface", [this]
     {
         UObjectContainer* Container = FBuildContainerHelper::Build();
-        TFactory<IReader> Factory(Container);
+        TFactory<IReader> Factory = Container->ResolveFactory<IReader>();
 
         TestTrue("Factory is Valid", Factory);
         TestTrue("Factory is Valid", Factory.IsValid());
@@ -38,34 +37,10 @@ void FFactorySpec::Define()
         TestNotNull("Resolved object", Resolved.GetInterface());
     });
 
-    It("Should return default UObject if not registered", [this]
-    {
-        UObjectContainer* Container = FObjectContainerBuilder().Build();
-        TFactory<UMockReader> Factory(Container);
-
-        TestFalse("Factory is Valid", Factory);
-        TestFalse("Factory is Valid", Factory.IsValid());
-
-        UMockReader* Resolved = Factory.TryResolve();
-        TestNull("Resolved object", Resolved);
-    });
-
-    It("Should return default TScriptInterface if not registered", [this]
-    {
-        UObjectContainer* Container = FObjectContainerBuilder().Build();
-        TFactory<IReader> Factory(Container);
-
-        TestFalse("Factory is Valid", Factory);
-        TestFalse("Factory is Valid", Factory.IsValid());
-
-        TScriptInterface<IReader> Resolved = Factory.TryResolve();
-        TestNull("Resolved object", Resolved.GetInterface());
-    });
-
     It("Should be invalid if container destroyed", [this]
     {
         UObjectContainer* Container = FBuildContainerHelper::Build();
-        TFactory<IReader> Factory(Container);
+        TFactory<IReader> Factory = Container->ResolveFactory<IReader>();
 
         TestTrue("Factory is Valid", Factory);
         TestTrue("Factory is Valid", Factory.IsValid());
@@ -74,5 +49,23 @@ void FFactorySpec::Define()
 
         TestFalse("Factory is Valid", Factory);
         TestFalse("Factory is Valid", Factory.IsValid());
+    });
+
+    It("Should be valid if child container destroyed", [this]
+    {
+        UObjectContainer* Container = FBuildContainerHelper::Build();
+        UObjectContainer* ChildContainer = FObjectContainerBuilder().BuildNested(*Container);
+
+        TFactory<IReader> Factory = ChildContainer->ResolveFactory<IReader>();
+
+        TestTrue("Factory is Valid", Factory);
+        TestTrue("Factory is Valid", Factory.IsValid());
+
+        TStrongObjectPtr<UObjectContainer> GCProtector(Container);
+
+        CollectGarbage(GARBAGE_COLLECTION_KEEPFLAGS);
+
+        TestTrue("Factory is Valid", Factory);
+        TestTrue("Factory is Valid", Factory.IsValid());
     });
 }

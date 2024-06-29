@@ -79,6 +79,63 @@ struct TDependencyResolver
 {
     static TFactory<T> Resolve(const IResolver& Resolver)
     {
-        return TFactory<T>(&Resolver);
+        return Resolver.ResolveFactory<T>();
+    }
+};
+
+/* TOptional< TScriptInterface<ISomeInterface> > */
+template <typename T>
+struct TDependencyResolver
+<
+    TOptional< TScriptInterface<T> >,
+    typename TEnableIf< UnrealDI_Impl::TIsUInterface< T >::Value >::Type
+>
+{
+    static TOptional< TScriptInterface<T> > Resolve(const IResolver& Resolver)
+    {
+        if (TScriptInterface<T> Resolved = Resolver.TryResolve(UnrealDI_Impl::TStaticClass<T>::StaticClass()); Resolved != nullptr)
+        {
+            return { Resolved };
+        }
+
+        return {};
+    }
+};
+
+/* TOptional< TObjectsCollection<ISomeInterface> > */
+template <typename T>
+struct TDependencyResolver
+<
+    TOptional< TObjectsCollection<T> >,
+    typename TEnableIf< UnrealDI_Impl::TIsUInterface< T >::Value >::Type
+>
+{
+    static TOptional< TObjectsCollection<T> > Resolve(const IResolver& Resolver)
+    {
+        if (TObjectsCollection<T> Resolved = Resolver.TryResolveAll(UnrealDI_Impl::TStaticClass<T>::StaticClass()); Resolved.IsValid())
+        {
+            return { MoveTemp(Resolved) };
+        }
+
+        return {};
+    }
+};
+
+/* TOptional< TFactory<ISomeInterface> > */
+template <typename T>
+struct TDependencyResolver
+<
+    TOptional< TFactory<T> >,
+    typename TEnableIf< UnrealDI_Impl::TIsUInterface< T >::Value >::Type
+>
+{
+    static TOptional< TFactory<T> > Resolve(const IResolver& Resolver)
+    {
+        if(TFactory<T> Resolved = Resolver.TryResolveFactory<T>(); Resolved.IsValid())
+        {
+            return { MoveTemp(Resolved) };
+        }
+
+        return {};
     }
 };

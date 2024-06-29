@@ -4,9 +4,7 @@
 
 #include "DI/Impl/IsUInterface.h"
 #include "DI/Impl/StaticClass.h"
-#include "DI/IResolver.h"
 #include "UObject/ScriptInterface.h"
-#include "UObject/WeakInterfacePtr.h"
 
 /*
  * Template class to request a factory of a required type.
@@ -17,10 +15,26 @@ template <typename T>
 class TFactory
 {
 public:
-    TFactory(const IResolver* InResolver = nullptr)
-        : WeakResolver(InResolver ? InResolver->_getUObject() : nullptr)
-    {
-    }
+    using FFactoryFunctionPtr = UObject* (*)(const UObject& Context, UClass& ObjectClass);
+
+    TFactory() = default;
+
+    TFactory(const UObject& Object, FFactoryFunctionPtr FactoryFunction)
+        : WeakContextObject(&Object)
+        , FactoryFunction(FactoryFunction)
+    {}
+
+    template <typename U>
+    explicit TFactory(const TFactory<U>& Other)
+        : WeakContextObject(Other.WeakContextObject)
+        , FactoryFunction(Other.FactoryFunction)
+    {}
+
+    template <typename U>
+    TFactory(TFactory<U>&& Other)
+        : WeakContextObject(Other.WeakContextObject)
+        , FactoryFunction(Other.FactoryFunction)
+    {}
 
     /*
      * Resolves instance of type T. Asserts if container is no longer valid
@@ -29,29 +43,12 @@ public:
     {
         UE_STATIC_ASSERT_COMPLETE_TYPE(T, "Type T in TFactory<T> must be fully defined when calling operator(), not just forward declared. Are you missing an #include?");
 
-        IResolver* Resolver = WeakResolver.Get();
-        checkf(Resolver != nullptr, TEXT("TFactory invoked after UObjectContainer was destroyed"));
+        checkf(FactoryFunction != nullptr, TEXT("TFactory is not initialized"));
 
-        return Cast(Resolver->Resolve(UnrealDI_Impl::TStaticClass<T>::StaticClass()));
-    }
+        const UObject* ContextObject = WeakContextObject.Get();
+        checkf(ContextObject != nullptr, TEXT("TFactory invoked after UObjectContainer was destroyed"));
 
-    /*
-     * Resolves instance of type T or nullptr if it is not registered. Asserts if container is no longer valid
-     * Use this method ONLY for optional dependencies
-     */
-    auto TryResolve() const
-    {
-        UE_STATIC_ASSERT_COMPLETE_TYPE(T, "Type T in TFactory<T> must be fully defined when calling TryResolve(), not just forward declared. Are you missing an #include?");
-
-        IResolver* Resolver = WeakResolver.Get();
-        checkf(Resolver != nullptr, TEXT("TFactory invoked after UObjectContainer was destroyed"));
-
-        if (Resolver->IsRegistered<T>())
-        {
-            return Cast(Resolver->Resolve(UnrealDI_Impl::TStaticClass<T>::StaticClass()));
-        }
-
-        return Cast(nullptr);
+        return Cast(FactoryFunction(*ContextObject, *UnrealDI_Impl::TStaticClass<T>::StaticClass()));
     }
 
     /*
@@ -60,10 +57,7 @@ public:
      */
     bool IsValid() const
     {
-        UE_STATIC_ASSERT_COMPLETE_TYPE(T, "Type T in TFactory<T> must be fully defined when calling IsValid(), not just forward declared. Are you missing an #include?");
-
-        IResolver* Resolver = WeakResolver.Get();
-        return Resolver != nullptr && Resolver->IsRegistered<T>();
+        return FactoryFunction != nullptr && WeakContextObject.IsValid();
     }
 
     /*
@@ -76,6 +70,8 @@ public:
     }
 
 private:
+    template<typename U> friend class TFactory;
+
     auto Cast(UObject* Object) const
     {
         if constexpr (TIsDerivedFrom< T, UObject >::Value)
@@ -92,5 +88,6 @@ private:
         }
     }
 
-    TWeakInterfacePtr<IResolver> WeakResolver;
+    TWeakObjectPtr<const UObject> WeakContextObject;
+    FFactoryFunctionPtr FactoryFunction = nullptr;
 };

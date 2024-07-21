@@ -247,6 +247,11 @@ FText UK2Node_InitDependencies::GetNodeTitle(ENodeTitleType::Type TitleType) con
     return INVTEXT("Init Dependencies");
 }
 
+FText UK2Node_InitDependencies::GetTooltipText() const
+{
+    return NSLOCTEXT("UnrealDI", "InitDependenciesNode.Tooltip", "Defines Event that receives dependencies from DI container");
+}
+
 FLinearColor UK2Node_InitDependencies::GetNodeTitleColor() const
 {
     return GetDefault<UGraphEditorSettings>()->EventNodeTitleColor;

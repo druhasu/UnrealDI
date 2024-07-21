@@ -1,6 +1,15 @@
 // Copyright Andrei Sudarikov. All Rights Reserved.
 
 #include "DI/Impl/UnrealDIBlueprintLibrary.h"
+#include "DI/InjectOnConstruction.h"
+
+void UUnrealDIBlueprintLibrary::TryInitDependencies(UObject* Target)
+{
+    if (Target != nullptr)
+    {
+        FInjectOnConstruction::TryInitDependenciesInternal(Target);
+    }
+}
 
 DEFINE_FUNCTION(UUnrealDIBlueprintLibrary::execCallFunctionIndirect)
 {

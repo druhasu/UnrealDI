@@ -76,6 +76,12 @@ public static class CodeGenerator
 
             foreach (UhtClass uhtClass in header.Children.OfType<UhtClass>())
             {
+                if (uhtClass.MetaData.ContainsKey("NoInitDependencies"))
+                {
+                    // skip classes marked with NoInitDependencies metadata
+                    continue;
+                }
+
                 var dependencies = FindClassDependencies(uhtClass, factory.Session);
 
                 if (dependencies != null)
@@ -138,10 +144,10 @@ public static class CodeGenerator
             switch (findResult)
             {
                 case InitDependenciesFindResult.FoundSimilar:
-                    uhtClass.LogError(declaration.Tokens[0].InputLine, "InitDependencies method has incorrect name. Check spelling");
+                    uhtClass.LogError(declaration.Tokens[0].InputLine, "InitDependencies method has incorrect name. Check spelling. You can exclude this class from checks using UCLASS(meta=(NoInitDependencies))");
                     break;
                 case InitDependenciesFindResult.FoundMultiple:
-                    uhtClass.LogError(declaration.Tokens[0].InputLine, "Class has multiple InitDependencies methods");
+                    uhtClass.LogError(declaration.Tokens[0].InputLine, "Class has multiple InitDependencies methods. You can exclude this class from checks using UCLASS(meta=(NoInitDependencies))");
                     break;
             }
 

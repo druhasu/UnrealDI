@@ -4,9 +4,11 @@
 
 #include "DI/ObjectContainerBuilder.h"
 #include "DI/ObjectContainer.h"
+#include "DI/InjectOnConstruction.h"
 
 #include "MockClasses_BlueprintInitDependencies.h"
 #include "BuildContainerHelper.h"
+#include "TempWorldHelper.h"
 
 BEGIN_DEFINE_SPEC(FBlueprintInitDependenciesSpec, "UnrealDI.Blueprint InitDependencies", EAutomationTestFlags::ClientContext | EAutomationTestFlags::EditorContext | EAutomationTestFlags::ServerContext | EAutomationTestFlags::EngineFilter)
 UObjectContainer* CreateContainer(const FString& ClassPath);
@@ -80,6 +82,22 @@ void FBlueprintInitDependenciesSpec::Define()
 
         TestTrue("Found object", bFoundObject);
         TestTrue("Found interface", bFoundInterface);
+    });
+
+    It("Should call InitDependencies via TryInitDependencies function", [this]
+    {
+        FTempWorldHelper Helper;
+
+        UObjectContainer* Container = CreateContainer("");
+        FInjectOnConstruction::SetContainerForWorld(Helper.World, Container);
+
+        FSoftObjectPath Path(TEXT("/UnrealDITests/BP_TestTryInitDependencies.BP_TestTryInitDependencies_C"));
+        UClass* Class = (UClass*)Path.TryLoad();
+
+        UTestTryInitDependencies* Object = NewObject<UTestTryInitDependencies>(Helper.World, Class);
+        Object->CallTryInitDependencies();
+
+        TestNotNull("Injected Interface", Object->DependencyInterface.GetInterface());
     });
 }
 

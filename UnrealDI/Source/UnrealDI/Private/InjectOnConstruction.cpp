@@ -36,6 +36,11 @@ void FInjectOnConstruction::TryInitDependencies(UObject* Self)
 {
     check(Self != nullptr);
 
+    TryInitDependenciesInternal(Self);
+}
+
+void FInjectOnConstruction::TryInitDependenciesInternal(UObject* Self)
+{
     UWorld* World = Self->GetWorld();
     UObjectContainer* Container = GetContainerForWorld(World);
 

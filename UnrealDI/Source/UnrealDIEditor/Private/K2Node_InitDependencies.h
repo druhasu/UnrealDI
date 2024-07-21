@@ -34,6 +34,7 @@ public:
     bool CanDuplicateNode() const override;
     void ValidateNodeDuringCompilation(class FCompilerResultsLog& MessageLog) const override;
     FText GetNodeTitle(ENodeTitleType::Type TitleType) const override;
+    FText GetTooltipText() const override;
     FLinearColor GetNodeTitleColor() const override;
     FSlateIcon GetIconAndTint(FLinearColor& OutColor) const override;
     //~ End UEdGraphNode Interface

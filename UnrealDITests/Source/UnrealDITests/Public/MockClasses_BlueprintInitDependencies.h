@@ -45,3 +45,16 @@ public:
     UPROPERTY(BlueprintReadWrite)
     TObjectPtr<UBlueprintDependencyObject> DependencyObject;
 };
+
+UCLASS(Blueprintable)
+class UTestTryInitDependencies : public UObject
+{
+    GENERATED_BODY()
+
+public:
+    UFUNCTION(BlueprintImplementableEvent)
+    void CallTryInitDependencies();
+
+    UPROPERTY(BlueprintReadWrite)
+    TScriptInterface<IBlueprintDependencyInterface> DependencyInterface;
+};

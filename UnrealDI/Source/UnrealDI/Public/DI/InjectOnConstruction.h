@@ -31,8 +31,13 @@ public:
     static UObjectContainer* GetContainerForWorld(UWorld* World);
 
 protected:
+    friend class UUnrealDIBlueprintLibrary; // needs access to TryInitDependenciesInternal
+
     /*
      * Call this method from your subclass constructor.
      */
     void TryInitDependencies(UObject* Self);
+
+private:
+    static void TryInitDependenciesInternal(UObject* Self);
 };

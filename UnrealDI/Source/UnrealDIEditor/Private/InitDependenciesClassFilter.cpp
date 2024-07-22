@@ -73,9 +73,10 @@ bool FInitDependenciesClassFilter::IsClassLocatedInCurrentProject(const UClass* 
         return true;
     }
 
-    if (ModuleStatus.FilePath.Contains(FPaths::GameSourceDir()))
+    FString GameBinariesDir = FPaths::ConvertRelativePathToFull(FPaths::ProjectDir() / "Binaries");
+    if (ModuleStatus.FilePath.Contains(GameBinariesDir))
     {
-        // this module is inside game Source directory
+        // this module is inside game Binaries directory
         return true;
     }
 

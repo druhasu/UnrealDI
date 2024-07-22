@@ -201,4 +201,28 @@ void DependenciesInjectionSpec::Define()
         TestNotNull("Resolved object", Resolved);
         TestNotNull("Injected dependency", Resolved->Instance);
     });
+
+    It("Should Auto Register type in Container that it was requested from", [this]
+    {
+        FObjectContainerBuilder ParentBuilder;
+        UObjectContainer* ParentContainer = ParentBuilder.Build();
+
+        FObjectContainerBuilder ChildBuilder;
+        ChildBuilder.RegisterType<UMockReader>().As<IReader>();
+        UObjectContainer* ChildContainer = ChildBuilder.BuildNested(*ParentContainer);
+
+        TestFalse("Registered in ChildContainer", ChildContainer->IsRegistered<UNeedInterfaceInstanceFactory>());
+
+        // this method should search for registration of UNeedInterfaceInstance in ChildContainer
+        // it should not find it and auto register UNeedInterfaceInstance in it
+        // then it should use this new registration to Inject dependencies into UNeedInterfaceInstanceFactory instance and resolve those dependencies from ChildContainer
+        UNeedInterfaceInstanceFactory* Resolved = ChildContainer->Resolve<UNeedInterfaceInstanceFactory>();
+
+        TestNotNull("Resolved object", Resolved);
+        TestTrue("Registered in ChildContainer", ChildContainer->IsRegistered<UNeedInterfaceInstanceFactory>());
+
+        TScriptInterface<IReader> Reader = Resolved->Instance->Instance;
+
+        TestNotNull("Reader", Reader.GetInterface());
+    });
 }

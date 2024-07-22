@@ -181,6 +181,32 @@ void UObjectContainer::InitServices()
 template <bool bCheck>
 TTuple<const UObjectContainer::FResolver*, const UObjectContainer*> UObjectContainer::GetResolver(UClass* Type) const
 {
+    auto ResolverTuple = FindResolver(Type);
+
+    if (ResolverTuple.Key != nullptr)
+    {
+        return ResolverTuple;
+    }
+
+    // make sure that we can auto-register this type
+    if (Type->IsChildOf<UInterface>())
+    {
+        if constexpr (bCheck)
+        {
+            checkf(!"Cannot auto register type", TEXT("Type %s is not registered and may not be auto registered. Only types derived from UObject may be auto registered"), *Type->GetName());
+        }
+
+        return MakeTuple(nullptr, this);
+    }
+
+    // auto-register Type if no registration found for it
+    FResolversArray& NewArray = const_cast<UObjectContainer*>(this)->Registrations.Emplace(Type, { FResolver { Type, MakeShared<UnrealDI_Impl::FLifetimeHandler_Transient>() } });
+
+    return MakeTuple(&NewArray.Last(), this);
+}
+
+TTuple<const UObjectContainer::FResolver*, const UObjectContainer*> UObjectContainer::FindResolver(UClass* Type) const
+{
     const FResolversArray* Resolvers = Registrations.Find(Type);
 
     if (Resolvers)
@@ -189,26 +215,10 @@ TTuple<const UObjectContainer::FResolver*, const UObjectContainer*> UObjectConta
     }
     else if (ParentContainer)
     {
-        return ParentContainer->GetResolver<bCheck>(Type);
+        return ParentContainer->FindResolver(Type);
     }
-    else
-    {
-        // auto-register Type if no registration found for it
 
-        if (Type->IsChildOf<UInterface>())
-        {
-            if constexpr (bCheck)
-            {
-                checkf(!"Cannot auto register type", TEXT("Type %s is not registered and may not be auto registered. Only types derived from UObject may be auto registered"), *Type->GetName());
-            }
-
-            return MakeTuple(nullptr, this);
-        }
-
-        FResolversArray& NewArray = const_cast<UObjectContainer*>(this)->Registrations.Emplace(Type, { FResolver { Type, MakeShared<UnrealDI_Impl::FLifetimeHandler_Transient>() } });
-
-        return MakeTuple(&NewArray.Last(), this);
-    }
+    return MakeTuple(nullptr, this);
 }
 
 IInstanceFactory* UObjectContainer::FindInstanceFactory(UClass* Type) const

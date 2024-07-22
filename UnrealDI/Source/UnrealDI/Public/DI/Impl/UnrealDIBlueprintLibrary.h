@@ -12,7 +12,7 @@ class UNREALDI_API UUnrealDIBlueprintLibrary : public UBlueprintFunctionLibrary
 
 public:
     /* Tries to call InitDependencies on provided object, resolving them from current World-bound container */
-    UFUNCTION(BlueprintCallable, Category = "Dependency Injection", meta = (HidePin = "Target", DefaultToSelf = "Target"))
+    UFUNCTION(BlueprintCallable, Category = "Dependency Injection", meta = (HidePin = "Target", DefaultToSelf = "Target", CompactNodeTitle = "Try Init Dependencies"))
     static void TryInitDependencies(UObject* Target);
 
     /* Calls Function on an Object with provided variadic arguments */

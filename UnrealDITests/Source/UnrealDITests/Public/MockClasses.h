@@ -164,3 +164,17 @@ public:
 
     TOptional<TObjectsCollection<IReader>> Collection;
 };
+
+/* Requests factory of UNeedInterfaceInstance */
+UCLASS()
+class UNREALDITESTS_API UNeedInterfaceInstanceFactory : public UObject
+{
+    GENERATED_BODY()
+public:
+    void InitDependencies(TFactory<UNeedInterfaceInstance> InNeedInterfaceInstanceFactory)
+    {
+        Instance = InNeedInterfaceInstanceFactory();
+    }
+
+    UNeedInterfaceInstance* Instance;
+};

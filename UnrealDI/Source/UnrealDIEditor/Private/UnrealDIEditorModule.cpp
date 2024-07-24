@@ -2,10 +2,12 @@
 
 #include "Modules/ModuleManager.h"
 #include "PropertyEditorModule.h"
+#include "KismetCompiler.h"
 
 #include "K2Node_InitDependencies.h"
 #include "InitDependenciesNodeDetails.h"
 #include "InitDependenciesNodeEntryCustomization.h"
+#include "DI/Impl/DependenciesRegistry.h"
 
 class FUnrealDIEditorModule : public IModuleInterface
 {
@@ -24,6 +26,8 @@ public:
         FFilterDelegate Dlg = FFilterDelegate::CreateStatic(&UK2Node_InitDependencies::FilterAction);
         FilterDelegateHandle = Dlg.GetHandle();
         BlueprintGraphModule.GetExtendedActionMenuFilters().Add(Dlg);
+
+        FKismetCompilerContext::OnPostCompile.AddRaw(this, &ThisClass::OnBlueprintCompiled);
     }
 
     void ShutdownModule() override
@@ -40,6 +44,16 @@ public:
         {
             BlueprintGraphModule->GetExtendedActionMenuFilters().RemoveAll([&](const FFilterDelegate& Delegate) { return Delegate.GetHandle() == FilterDelegateHandle; });
         }
+
+        FKismetCompilerContext::OnPostCompile.RemoveAll(this);
+    }
+
+    void OnBlueprintCompiled()
+    {
+        // once blueprint is compiled, out cache of InitDependency functions is no longer valid
+        // it's not easy to determine which class was compiled, so we drop whole cache
+        // during edit time it is acceptable to have small performance hit, so it is not a big deal
+        UnrealDI_Impl::FDependenciesRegistry::ClearBlueprintInitFunctionsCache();
     }
 
 private:

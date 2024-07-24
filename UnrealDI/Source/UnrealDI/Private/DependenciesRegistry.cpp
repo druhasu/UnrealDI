@@ -32,6 +32,24 @@ void UnrealDI_Impl::FDependenciesRegistry::ProcessPendingRegistrations()
     }
 }
 
+void UnrealDI_Impl::FDependenciesRegistry::ClearBlueprintInitFunctionsCache()
+{
+    for (auto It = CachedInitFunctions.CreateIterator(); It; ++It)
+    {
+        UClass* Class = It.Key().Get();
+        if (Class == nullptr)
+        {
+            It.RemoveCurrent();
+            continue;
+        }
+
+        if (!Class->IsNative())
+        {
+            It.RemoveCurrent();
+        }
+    }
+}
+
 void UnrealDI_Impl::FDependenciesRegistry::FindInitFunctions(UClass* Class, FInitFunctionPtr& OutNativeInitFunction, UFunction*& OutBlueprintInitFunction)
 {
     // check cache first

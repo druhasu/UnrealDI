@@ -23,6 +23,7 @@ namespace UnrealDI_Impl
         static void ExposeDependencies();
 
         static void ProcessPendingRegistrations();
+        static void ClearBlueprintInitFunctionsCache();
 
         static void FindInitFunctions(UClass* Class, FInitFunctionPtr& OutNativeInitFunction, UFunction*& OutBlueprintInitFunction);
 

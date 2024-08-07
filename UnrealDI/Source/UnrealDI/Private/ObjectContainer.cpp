@@ -6,25 +6,6 @@
 #include "DI/Impl/DependenciesRegistry.h"
 #include "DI/Impl/Lifetimes.h"
 
-void UObjectContainer::PostInitProperties()
-{
-    Super::PostInitProperties();
-
-    OuterForNewObject = nullptr;
-    for (UObject* NextOuter = GetOuter(); OuterForNewObject == nullptr && NextOuter != nullptr; NextOuter = NextOuter->GetOuter())
-    {
-        if (NextOuter->IsA<UWorld>() || NextOuter->IsA<UGameInstance>())
-        {
-            OuterForNewObject = NextOuter;
-        }
-    }
-
-    if (OuterForNewObject == nullptr)
-    {
-        OuterForNewObject = GetTransientPackage();
-    }
-}
-
 UObject* UObjectContainer::Resolve(UClass* Type) const
 {
     checkf(Type, TEXT("Requested object of null type"));
@@ -247,7 +228,7 @@ UObject* UObjectContainer::ResolveImpl(const FResolver& Resolver) const
         IInstanceFactory* Factory = FindInstanceFactory(EffectiveClass);
         check(Factory != nullptr);
 
-        Result = Factory->Create(OuterForNewObject, EffectiveClass);
+        Result = Factory->Create(OuterForNewObjects, EffectiveClass);
         checkf(Result != nullptr, TEXT("IInstanceFactory must never return nullptr. Check project specific implementation"));
 
         Inject(Result);

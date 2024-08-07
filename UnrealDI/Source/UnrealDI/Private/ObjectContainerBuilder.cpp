@@ -7,6 +7,7 @@
 UObjectContainer* FObjectContainerBuilder::Build(UObject* Outer)
 {
     UObjectContainer* Container = Outer ? NewObject<UObjectContainer>(Outer) : NewObject<UObjectContainer>();
+    Container->OuterForNewObjects = OuterForNewObjects ? OuterForNewObjects : Container->GetOuter();
 
     AddRegistrationsToContainer(Container);
 
@@ -16,11 +17,17 @@ UObjectContainer* FObjectContainerBuilder::Build(UObject* Outer)
 UObjectContainer* FObjectContainerBuilder::BuildNested(UObjectContainer& Parent)
 {
     UObjectContainer* Container = NewObject<UObjectContainer>(&Parent);
+    Container->OuterForNewObjects = OuterForNewObjects ? OuterForNewObjects : Parent.OuterForNewObjects;
     Container->ParentContainer = &Parent;
 
     AddRegistrationsToContainer(Container);
 
     return Container;
+}
+
+void FObjectContainerBuilder::SetOuterForNewObjects(UObject* Outer)
+{
+    OuterForNewObjects = Outer;
 }
 
 void FObjectContainerBuilder::AddRegistrationsToContainer(UObjectContainer* Container)

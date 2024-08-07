@@ -20,9 +20,6 @@ class UNREALDI_API UObjectContainer : public UObject, public IResolver, public I
     GENERATED_BODY()
 
 public:
-
-    void PostInitProperties() override;
-
     // ~Begin IResolver interface
     UObject* Resolve(UClass* Type) const override;
     TObjectsCollection<UObject> ResolveAll(UClass* Type) const override;
@@ -85,7 +82,8 @@ private:
 
     static UObject* ResolveFromContext(const UObject& Context, UClass& Type);
 
-    TObjectPtr<UObject> OuterForNewObject = nullptr;
+    UPROPERTY()
+    TObjectPtr<UObject> OuterForNewObjects = nullptr;
 
     UPROPERTY()
     TObjectPtr<UObjectContainer> ParentContainer = nullptr;

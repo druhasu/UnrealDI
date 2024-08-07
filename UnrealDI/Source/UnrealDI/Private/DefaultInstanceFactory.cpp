@@ -23,7 +23,17 @@ UObject* UDefaultInstanceFactory::Create(UObject* Outer, UClass* EffectiveClass)
         return CreateWidget<UUserWidget>(World, EffectiveClass);
     }
 
-    return NewObject<UObject>(Outer, EffectiveClass);
+    // try to create objects with stable names if possible
+    FName NewObjectName = EffectiveClass->GetFName();
+
+    UObject* ExistingObject = StaticFindObjectFastInternal(EffectiveClass, Outer, NewObjectName, true, RF_NoFlags, IsInAsyncLoadingThread() ? EInternalObjectFlags::None : EInternalObjectFlags::AsyncLoading);
+    if (ExistingObject != nullptr)
+    {
+        // object with this name already exists, fallback to unique name
+        NewObjectName = MakeUniqueObjectName(Outer, EffectiveClass, NewObjectName);
+    }
+
+    return NewObject<UObject>(Outer, EffectiveClass, NewObjectName);
 }
 
 void UDefaultInstanceFactory::FinalizeCreation(UObject* Object) const

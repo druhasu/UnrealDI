@@ -74,6 +74,11 @@ public:
      */
     UObjectContainer* BuildNested(UObjectContainer& Parent);
 
+    /*
+     * Overrides Outer for objects created by container. By default they are created in the same Outer as Container
+     */
+    void SetOuterForNewObjects(UObject* Outer);
+
 private:
     template<typename TConfigurator, typename... TArgs>
     TConfigurator& AddConfigurator(TArgs... Args)
@@ -86,4 +91,6 @@ private:
     void AddRegistrationsToContainer(UObjectContainer* Container);
 
     TArray<TSharedRef<UnrealDI_Impl::FRegistrationConfiguratorBase>> Registrations;
+
+    UObject* OuterForNewObjects = nullptr;
 };

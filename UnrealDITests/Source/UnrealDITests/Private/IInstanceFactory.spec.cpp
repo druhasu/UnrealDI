@@ -124,4 +124,24 @@ void FIInstanceFactorySpec::Define()
 
         TestEqual("Created objects Num", Factory->CreatedObjects.Num(), 0);
     });
+
+    It("Should give fixed name to first created object", [this]
+    {
+        FTempWorldHelper Helper;
+        UDefaultInstanceFactory* Factory = GetMutableDefault<UDefaultInstanceFactory>();
+
+        UObject* FirstResult = Factory->Create(Helper.World, UInjectObject::StaticClass());
+        Factory->FinalizeCreation(FirstResult);
+
+        FName ClassName = UInjectObject::StaticClass()->GetFName();
+        TestEqual("Result Name", FirstResult->GetFName(), ClassName);
+
+        UObject* SecondResult = Factory->Create(Helper.World, UInjectObject::StaticClass());
+        Factory->FinalizeCreation(SecondResult);
+
+        // second object should have same "name" part, but different number
+        FName SecondName = SecondResult->GetFName();
+        TestEqual("Result Name ComparisonIndex", SecondName.GetComparisonIndex(), ClassName.GetComparisonIndex());
+        TestNotEqual("Result Name Number", SecondName.GetNumber(), ClassName.GetNumber());
+    });
 }

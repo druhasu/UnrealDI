@@ -1,4 +1,6 @@
 site_name: UnrealDI
 docs_dir: Docs
+theme:
+  name: material
 nav:
   - Home: README.md

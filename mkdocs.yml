@@ -1,0 +1,4 @@
+site_name: UnrealDI
+docs_dir: Docs
+nav:
+  - Home: README.md

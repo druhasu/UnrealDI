@@ -218,7 +218,10 @@ IInstanceFactory* UObjectContainer::FindInstanceFactory(UClass* Type) const
 
 UObject* UObjectContainer::ResolveImpl(const FResolver& Resolver) const
 {
-    UObject* Result = Resolver.LifetimeHandler->Get();
+    // cache reference to LifetimeHandler, because reference to Resolver may become invalid during call to Inject due to Registrations map memory reallocation
+    UnrealDI_Impl::FLifetimeHandler& LifetimeHandler = Resolver.LifetimeHandler.Get();
+
+    UObject* Result = LifetimeHandler.Get();
     if (Result == nullptr)
     {
         UClass* EffectiveClass = Resolver.EffectiveClass.LoadSynchronous();
@@ -232,10 +235,11 @@ UObject* UObjectContainer::ResolveImpl(const FResolver& Resolver) const
         checkf(Result != nullptr, TEXT("IInstanceFactory must never return nullptr. Check project specific implementation"));
 
         Inject(Result);
+        // Resolver may be invalid after this call
 
         Factory->FinalizeCreation(Result);
 
-        Resolver.LifetimeHandler->Set(Result);
+        LifetimeHandler.Set(Result);
     }
 
     return Result;

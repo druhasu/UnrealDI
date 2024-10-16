@@ -116,7 +116,7 @@ public static class CodeGenerator
             foreach (UhtHeaderFile? headerFile in allIncludeFiles)
             {
                 sb.Append("#include \"");
-                sb.Append(GetModuleRelativeIncludePath(headerFile));
+                sb.Append(GetProperIncludePath(headerFile));
                 sb.Append("\"\n");
             }
 
@@ -308,8 +308,17 @@ public static class CodeGenerator
         return InitDependenciesFindResult.NotFound;
     }
 
-    private static string GetModuleRelativeIncludePath(UhtHeaderFile headerFile)
+    private static string GetProperIncludePath(UhtHeaderFile headerFile)
     {
-        return headerFile.Package.Module.Name + "/" + headerFile.ModuleRelativeFilePath;
+        if (headerFile.ModuleRelativeFilePath.StartsWith("Public", StringComparison.OrdinalIgnoreCase))
+        {
+            // output relative path for files in the "Public" folder
+            return headerFile.IncludeFilePath;
+        }
+        else
+        {
+            // otherwise output full path with module Name
+            return headerFile.Package.Module.Name + "/" + headerFile.ModuleRelativeFilePath;
+        }
     }
 }

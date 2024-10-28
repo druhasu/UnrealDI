@@ -1,7 +1,7 @@
 {
 	"FileVersion": 3,
 	"Version": 1,
-	"VersionName": "3.2.2",
+	"VersionName": "3.2.3",
 	"FriendlyName": "UnrealDI",
 	"Description": "DI container for Unreal",
 	"Category": "Other",

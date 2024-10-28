@@ -68,7 +68,11 @@ public static class CodeGenerator
 
         foreach (UhtHeaderFile header in factory.Session.HeaderFiles)
         {
+#if UE_5_5_OR_LATER
+            if (header.Module.IsPartOfEngine)
+#else
             if (header.Package.IsPartOfEngine)
+#endif
             {
                 // skip Engine packages, no need to generate anything for them
                 continue;
@@ -129,8 +133,13 @@ public static class CodeGenerator
                 sb.Append(");\n");
             }
 
+#if UE_5_5_OR_LATER
+            UhtModule module = classesPerModule.Key;
+            var outputPath = Path.Combine(module.Module.OutputDirectory, $"{module.Module.Name}.DI.gen.cpp");
+#else
             UHTManifest.Module module = classesPerModule.Key;
             var outputPath = Path.Combine(module.OutputDirectory, $"{module.Name}.DI.gen.cpp");
+#endif
 
             factory.CommitOutput(outputPath, sb.ToString());
         }
@@ -318,7 +327,11 @@ public static class CodeGenerator
         else
         {
             // otherwise output full path with module Name
+#if UE_5_5_OR_LATER
+            return headerFile.Module.Module.Name + "/" + headerFile.ModuleRelativeFilePath;
+#else
             return headerFile.Package.Module.Name + "/" + headerFile.ModuleRelativeFilePath;
+#endif
         }
     }
 }

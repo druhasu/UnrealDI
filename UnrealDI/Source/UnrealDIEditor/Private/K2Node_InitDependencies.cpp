@@ -12,6 +12,7 @@
 #include "K2Node_CustomEvent.h"
 #include "K2Node_CallFunction.h"
 #include "K2Node_Self.h"
+#include "Misc/EngineVersionComparison.h"
 
 void UK2Node_InitDependencies::ExpandNode(FKismetCompilerContext& CompilerContext, UEdGraph* SourceGraph)
 {
@@ -56,7 +57,11 @@ void UK2Node_InitDependencies::ExpandNode(FKismetCompilerContext& CompilerContex
     const UEdGraphSchema_K2* Schema = CompilerContext.GetSchema();
 
     // create node for new InitDependencies function
+#if UE_VERSION_OLDER_THAN(5,5,0)
     UK2Node_CustomEvent* InitDependenciesEventNode = CompilerContext.SpawnIntermediateEventNode<UK2Node_CustomEvent>(this, ExecPin, SourceGraph);
+#else
+    UK2Node_CustomEvent* InitDependenciesEventNode = CompilerContext.SpawnIntermediateNode<UK2Node_CustomEvent>(this, SourceGraph);
+#endif
     InitDependenciesEventNode->CustomFunctionName = UnrealDI_Impl::FDependenciesRegistry::MakeInitDependenciesFunctionName(CompilerContext.TargetClass);
 
     TArray<FName, TInlineAllocator<16>> PinsToMove;

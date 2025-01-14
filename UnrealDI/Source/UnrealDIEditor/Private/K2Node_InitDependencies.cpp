@@ -57,7 +57,7 @@ void UK2Node_InitDependencies::ExpandNode(FKismetCompilerContext& CompilerContex
     const UEdGraphSchema_K2* Schema = CompilerContext.GetSchema();
 
     // create node for new InitDependencies function
-#if UE_VERSION_OLDER_THAN(5,5,0)
+#if UE_VERSION_OLDER_THAN(5,4,0)
     UK2Node_CustomEvent* InitDependenciesEventNode = CompilerContext.SpawnIntermediateEventNode<UK2Node_CustomEvent>(this, ExecPin, SourceGraph);
 #else
     UK2Node_CustomEvent* InitDependenciesEventNode = CompilerContext.SpawnIntermediateNode<UK2Node_CustomEvent>(this, SourceGraph);

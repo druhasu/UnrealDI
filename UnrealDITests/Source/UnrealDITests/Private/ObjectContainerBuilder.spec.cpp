@@ -450,21 +450,25 @@ void ObjectContainerBuilderSpec::Define()
 
         It("Should create objects with custom Outer if overriden in regular Container", [this]
         {
+            UObject* A = NewObject<UTestOuter>();
+
             FObjectContainerBuilder Builder;
             Builder.RegisterType<UMockReader>();
-            Builder.SetOuterForNewObjects(GEngine);
+            Builder.SetOuterForNewObjects(A);
 
             UObjectContainer* Container = Builder.Build();
 
             UMockReader* Reader = Container->Resolve<UMockReader>();
 
-            TestEqual("Outer", Reader->GetOuter(), (UObject*)GEngine);
+            TestEqual("Outer", Reader->GetOuter(), A);
         });
 
         It("Should create objects with custom Outer if overriden in parent Container", [this]
         {
+            UObject* A = NewObject<UTestOuter>();
+
             FObjectContainerBuilder Builder;
-            Builder.SetOuterForNewObjects(GEngine);
+            Builder.SetOuterForNewObjects(A);
 
             FObjectContainerBuilder NestedBuilder;
             NestedBuilder.RegisterType<UMockReader>();
@@ -474,23 +478,87 @@ void ObjectContainerBuilderSpec::Define()
 
             UMockReader* Reader = NestedContainer->Resolve<UMockReader>();
 
-            TestEqual("Outer", Reader->GetOuter(), (UObject*)GEngine);
+            TestEqual("Outer", Reader->GetOuter(), A);
         });
 
         It("Should create objects with custom Outer if overriden in nested Container", [this]
         {
+            UObject* A = NewObject<UTestOuter>();
+
             FObjectContainerBuilder Builder;
 
             FObjectContainerBuilder NestedBuilder;
             NestedBuilder.RegisterType<UMockReader>();
-            NestedBuilder.SetOuterForNewObjects(GEngine);
+            NestedBuilder.SetOuterForNewObjects(A);
 
             UObjectContainer* Container = Builder.Build();
             UObjectContainer* NestedContainer = NestedBuilder.BuildNested(*Container);
 
             UMockReader* Reader = NestedContainer->Resolve<UMockReader>();
 
-            TestEqual("Outer", Reader->GetOuter(), (UObject*)GEngine);
+            TestEqual("Outer", Reader->GetOuter(), A);
+        });
+
+        It("Should use Outer from nested Container if registered in nested and resolved from nested", [this]
+        {
+            UObject* A = NewObject<UTestOuter>();
+            UObject* B = NewObject<UTestOuter>();
+
+            FObjectContainerBuilder Builder;
+            Builder.SetOuterForNewObjects(A);
+
+            FObjectContainerBuilder NestedBuilder;
+            NestedBuilder.SetOuterForNewObjects(B);
+            NestedBuilder.RegisterType<UMockReader>();
+
+            UObjectContainer* Container = Builder.Build();
+            UObjectContainer* NestedContainer = NestedBuilder.BuildNested(*Container);
+
+            UMockReader* Reader = NestedContainer->Resolve<UMockReader>();
+
+            TestEqual("Outer", Reader->GetOuter(), B);
+        });
+
+        It("Should use Outer from parent Container if registered in parent and resolved from nested", [this]
+        {
+            UObject* A = NewObject<UTestOuter>();
+            UObject* B = NewObject<UTestOuter>();
+
+            FObjectContainerBuilder Builder;
+            Builder.SetOuterForNewObjects(A);
+            Builder.RegisterType<UMockReader>();
+
+            FObjectContainerBuilder NestedBuilder;
+            NestedBuilder.SetOuterForNewObjects(B);
+
+            UObjectContainer* Container = Builder.Build();
+            UObjectContainer* NestedContainer = NestedBuilder.BuildNested(*Container);
+
+            UMockReader* Reader = NestedContainer->Resolve<UMockReader>();
+
+            TestEqual("Outer", Reader->GetOuter(), A);
+        });
+
+        It("Should use Outer from respective container when resolving collection", [this]
+        {
+            UObject* A = NewObject<UTestOuter>();
+            UObject* B = NewObject<UTestOuter>();
+
+            FObjectContainerBuilder Builder;
+            Builder.SetOuterForNewObjects(A);
+            Builder.RegisterType<UMockReader>();
+
+            FObjectContainerBuilder NestedBuilder;
+            NestedBuilder.SetOuterForNewObjects(B);
+            NestedBuilder.RegisterType<UMockReader>();
+
+            UObjectContainer* Container = Builder.Build();
+            UObjectContainer* NestedContainer = NestedBuilder.BuildNested(*Container);
+
+            TArray<UMockReader*> Readers = NestedContainer->ResolveAll<UMockReader>().ToArray();
+
+            TestEqual("First Reader Outer", Readers[0]->GetOuter(), A);
+            TestEqual("Second Reader Outer", Readers[1]->GetOuter(), B);
         });
     });
 }

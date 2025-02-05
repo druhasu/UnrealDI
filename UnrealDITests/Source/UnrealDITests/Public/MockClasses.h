@@ -10,6 +10,13 @@
 class IReader;
 class UMockReader;
 
+/* Simple object to be used as Outer in tests */
+UCLASS()
+class UNREALDITESTS_API UTestOuter : public UObject
+{
+    GENERATED_BODY()
+};
+
 /* Requests instance of Concrete type */
 UCLASS()
 class UNREALDITESTS_API UNeedObjectInstance : public UObject

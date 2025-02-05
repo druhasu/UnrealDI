@@ -72,7 +72,7 @@ private:
     TTuple<const FResolver*, const UObjectContainer*> GetResolver(UClass* Type) const;
     TTuple<const FResolver*, const UObjectContainer*> FindResolver(UClass* Type) const;
     IInstanceFactory* FindInstanceFactory(UClass* Type) const;
-    UObject* ResolveImpl(const FResolver& Resolver) const;
+    static UObject* ResolveImpl(const FResolver& Resolver, const UObjectContainer* OwningContainer);
     template <bool bCheck>
     TObjectsCollection<UObject> ResolveAllImpl(UClass* Type) const;
 

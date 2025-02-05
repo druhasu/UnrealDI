@@ -10,8 +10,8 @@ UObject* UObjectContainer::Resolve(UClass* Type) const
 {
     checkf(Type, TEXT("Requested object of null type"));
 
-    const auto [Resolver, _] = GetResolver<true>(Type);
-    return ResolveImpl(*Resolver);
+    const auto [Resolver, Container] = GetResolver<true>(Type);
+    return ResolveImpl(*Resolver, Container);
 }
 
 TObjectsCollection<UObject> UObjectContainer::ResolveAll(UClass* Type) const
@@ -33,8 +33,8 @@ UObject* UObjectContainer::TryResolve(UClass* Type) const
 {
     checkf(Type, TEXT("Requested object of null type"));
 
-    const auto [Resolver, _] = GetResolver<false>(Type);
-    return Resolver != nullptr ? ResolveImpl(*Resolver) : nullptr;
+    const auto [Resolver, Container] = GetResolver<false>(Type);
+    return Resolver != nullptr ? ResolveImpl(*Resolver, Container) : nullptr;
 }
 
 TObjectsCollection<UObject> UObjectContainer::TryResolveAll(UClass* Type) const
@@ -216,7 +216,7 @@ IInstanceFactory* UObjectContainer::FindInstanceFactory(UClass* Type) const
     return ParentContainer->FindInstanceFactory(Type);
 }
 
-UObject* UObjectContainer::ResolveImpl(const FResolver& Resolver) const
+UObject* UObjectContainer::ResolveImpl(const FResolver& Resolver, const UObjectContainer* OwningContainer)
 {
     // cache reference to LifetimeHandler, because reference to Resolver may become invalid during call to Inject due to Registrations map memory reallocation
     UnrealDI_Impl::FLifetimeHandler& LifetimeHandler = Resolver.LifetimeHandler.Get();
@@ -228,13 +228,13 @@ UObject* UObjectContainer::ResolveImpl(const FResolver& Resolver) const
         check(EffectiveClass != nullptr);
 
         // create and initialize instance
-        IInstanceFactory* Factory = FindInstanceFactory(EffectiveClass);
+        IInstanceFactory* Factory = OwningContainer->FindInstanceFactory(EffectiveClass);
         check(Factory != nullptr);
 
-        Result = Factory->Create(OuterForNewObjects, EffectiveClass);
+        Result = Factory->Create(OwningContainer->OuterForNewObjects, EffectiveClass);
         checkf(Result != nullptr, TEXT("IInstanceFactory must never return nullptr. Check project specific implementation"));
 
-        Inject(Result);
+        OwningContainer->Inject(Result);
         // Resolver may be invalid after this call
 
         Factory->FinalizeCreation(Result);
@@ -293,7 +293,7 @@ void UObjectContainer::AppendObjectsCollection(UClass* Type, UObject**& Data) co
     {
         for (const FResolver& Resolver : *Resolvers)
         {
-            *Data = ResolveImpl(Resolver);
+            *Data = ResolveImpl(Resolver, this);
             ++Data;
         }
     }

@@ -83,17 +83,8 @@ EDataValidationResult UDependencyContainerProxy::IsDataValid(class FDataValidati
 
 bool UDependencyContainerProxy::HasDuplicates(const TArray<FName>& InArray) const
 {
-	for (int i = 0; i < InArray.Num(); ++i)
-	{
-		for (int j = i + 1; j < InArray.Num(); ++j)
-		{
-			if (InArray[j].IsEqual(InArray[i]))
-			{
-				return true;
-			}
-		}
-	}
-	return false;
+	const TSet Set(InArray);
+	return Set.Num() != InArray.Num();
 }
 #endif
 

@@ -19,7 +19,7 @@ void UDependencyContainerProxy::Initialize(FObjectContainerBuilder& ContainerBui
 		SpawnedObjects.Add(NewDependency);
 		for (const FName& Registration : Registrations)
 		{
-			TExpected<FImplementedInterface> Interface = FindInterfaceRecursive(NewDependency->GetClass(), Registration);
+			TValueOrError<FImplementedInterface, FString> Interface = FindInterfaceRecursive(NewDependency->GetClass(), Registration);
 			if (Interface.HasError())
 			{
 				UE_LOG(LogTemp, Error, TEXT("%s"), *Interface.GetError())
@@ -71,7 +71,7 @@ EDataValidationResult UDependencyContainerProxy::IsDataValid(class FDataValidati
 		}
 		for (const FName& Dependency : Value)
 		{
-			if (TExpected<FImplementedInterface> Interface = FindInterfaceRecursive(Key.Get(), Dependency); Interface.HasError())
+			if (TValueOrError<FImplementedInterface, FString> Interface = FindInterfaceRecursive(Key.Get(), Dependency); Interface.HasError())
 			{
 				Context.AddError(FText::FromString(Interface.GetError()));
 				ValidationResult = CombineDataValidationResults(ValidationResult, Invalid);

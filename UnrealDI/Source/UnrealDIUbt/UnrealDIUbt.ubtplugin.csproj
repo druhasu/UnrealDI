@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 	<Import Project="UnrealDIUbt.ubtplugin.csproj.props" Condition="Exists('UnrealDIUbt.ubtplugin.csproj.props')" />
 	<Import Project="$(EngineDir)\Source\Programs\Shared\UnrealEngine.csproj.props" />
+	<Import Project="TargetFrameworkDetect.props" />
 
 	<PropertyGroup>
 		<RootNamespace>UnrealDI</RootNamespace>
@@ -10,7 +11,6 @@
 
 	<PropertyGroup>
 		<AssemblyName>UnrealDI.CodeGen</AssemblyName>
-		<TargetFramework>net6.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<TreatWarningsAsErrors>Nullable</TreatWarningsAsErrors>
 		<Configuration Condition=" '$(Configuration)' == '' ">Development</Configuration>

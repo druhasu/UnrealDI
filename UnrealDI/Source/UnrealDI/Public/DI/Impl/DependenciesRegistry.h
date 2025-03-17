@@ -3,6 +3,9 @@
 #pragma once
 
 #include "Containers/Map.h"
+#include "Delegates/IDelegateInstance.h"
+#include "UObject/WeakObjectPtr.h"
+#include "UObject/WeakObjectPtrTemplates.h"
 
 class UObject;
 class UClass;

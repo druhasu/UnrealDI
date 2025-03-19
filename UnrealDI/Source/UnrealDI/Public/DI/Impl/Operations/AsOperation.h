@@ -23,6 +23,14 @@ namespace RegistrationOperations
 
             return This;
         }
+
+        TConfigurator& As(UClass* Interface)
+        {
+            check(Interface->HasAllClassFlags(CLASS_Interface))
+            TConfigurator& This = StaticCast<TConfigurator&>(*this);
+            This.InterfaceTypes.AddUnique(Interface);
+            return This;
+        }
     };
 }
 }

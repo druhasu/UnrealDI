@@ -26,6 +26,7 @@ public class UnrealDIEditor : ModuleRules
                 "SlateCore",
                 "UnrealEd",
                 "UnrealDI",
+                "PropertyEditor"
             });
     }
 }

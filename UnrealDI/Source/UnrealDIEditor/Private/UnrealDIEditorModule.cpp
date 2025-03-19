@@ -1,5 +1,6 @@
 // Copyright Andrei Sudarikov. All Rights Reserved.
 
+#include "DependencyContainerCustomization.h"
 #include "Modules/ModuleManager.h"
 #include "PropertyEditorModule.h"
 #include "KismetCompiler.h"
@@ -8,6 +9,7 @@
 #include "InitDependenciesNodeDetails.h"
 #include "InitDependenciesNodeEntryCustomization.h"
 #include "DI/Impl/DependenciesRegistry.h"
+#include "Di/Impl/DependencyContainerProxy.h"
 
 class FUnrealDIEditorModule : public IModuleInterface
 {
@@ -22,7 +24,7 @@ public:
 
         PropertyModule.RegisterCustomClassLayout(UK2Node_InitDependencies::StaticClass()->GetFName(), FOnGetDetailCustomizationInstance::CreateStatic(&FInitDependenciesNodeDetails::Make));
         PropertyModule.RegisterCustomPropertyTypeLayout(FInitDependenciesNodeEntry::StaticStruct()->GetFName(), FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FInitDependenciesNodeEntryCustomization::Make));
-
+        PropertyModule.RegisterCustomPropertyTypeLayout(FDependencyContainer::StaticStruct()->GetFName(), FOnGetPropertyTypeCustomizationInstance::CreateStatic(&FDependencyContainerCustomization::MakeInstance));
         FFilterDelegate Dlg = FFilterDelegate::CreateStatic(&UK2Node_InitDependencies::FilterAction);
         FilterDelegateHandle = Dlg.GetHandle();
         BlueprintGraphModule.GetExtendedActionMenuFilters().Add(Dlg);

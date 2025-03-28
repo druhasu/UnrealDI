@@ -4,6 +4,7 @@
 
 #include "Containers/Array.h"
 #include "Templates/SharedPointer.h"
+#include "UObject/SoftObjectPtr.h"
 
 class UClass;
 class UObject;

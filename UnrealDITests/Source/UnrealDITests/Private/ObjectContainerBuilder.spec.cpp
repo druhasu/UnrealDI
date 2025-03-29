@@ -59,7 +59,7 @@ void ObjectContainerBuilderSpec::Define()
             TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
-        It("Should Register Type As Interface", [this]()
+        It("Should Register Type As Interface Template", [this]()
         {
             FObjectContainerBuilder Builder;
             Builder.RegisterType<UMockReader>().As<IReader>();
@@ -71,10 +71,69 @@ void ObjectContainerBuilderSpec::Define()
             TestFalse("UMockReader is registered", Container->IsRegistered<UMockReader>());
         });
 
-        It("Should Register Type As Class", [this]()
+        It("Should Register Type As Interface by Pointer", [this]()
+        {
+            FObjectContainerBuilder Builder;
+            Builder.RegisterType<UMockReader>().As(UReader::StaticClass());
+
+            UObjectContainer* Container = Builder.Build();
+
+            TestNotNull("Container", Container);
+            TestTrue("IReader is registered", Container->IsRegistered<IReader>());
+            TestFalse("UMockReader is registered", Container->IsRegistered<UMockReader>());
+        });
+
+        It("Should Register Type by Pointer As Interface by Pointer", [this]()
+        {
+            FObjectContainerBuilder Builder;
+            Builder.RegisterType(UMockReader::StaticClass()).As(UReader::StaticClass());
+
+            UObjectContainer* Container = Builder.Build();
+
+            TestNotNull("Container", Container);
+            TestTrue("IReader is registered", Container->IsRegistered<IReader>());
+            TestFalse("UMockReader is registered", Container->IsRegistered<UMockReader>());
+        });
+
+        It("Should Register Type by Pointer As Interface Template", [this]()
+        {
+            FObjectContainerBuilder Builder;
+            Builder.RegisterType(UMockReader::StaticClass()).As<IReader>();
+
+            UObjectContainer* Container = Builder.Build();
+
+            TestNotNull("Container", Container);
+            TestTrue("IReader is registered", Container->IsRegistered<IReader>());
+            TestFalse("UMockReader is registered", Container->IsRegistered<UMockReader>());
+        });
+
+        It("Should Register Type by Pointer As Same Type by Pointer", [this]()
+        {
+            FObjectContainerBuilder Builder;
+            Builder.RegisterType(UMockReader::StaticClass()).As(UMockReader::StaticClass());
+
+            UObjectContainer* Container = Builder.Build();
+
+            TestNotNull("Container", Container);
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
+        });
+
+        It("Should Register Type As Class Template", [this]()
         {
             FObjectContainerBuilder Builder;
             Builder.RegisterType<UMockReader>().As<UMockReader>();
+
+            UObjectContainer* Container = Builder.Build();
+
+            TestNotNull("Container", Container);
+            TestFalse("IReader is registered", Container->IsRegistered<IReader>());
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
+        });
+
+        It("Should Register Type As Class by Pointer", [this]()
+        {
+            FObjectContainerBuilder Builder;
+            Builder.RegisterType<UMockReader>().As(UMockReader::StaticClass());
 
             UObjectContainer* Container = Builder.Build();
 

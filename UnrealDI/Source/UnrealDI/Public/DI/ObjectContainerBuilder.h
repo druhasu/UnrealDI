@@ -35,6 +35,15 @@ public:
     }
 
     /*
+     * Adds registration for type TObject using default factory.
+     * By default objects are handled by Transient lifetime.
+     */
+    UnrealDI_Impl::TRegistrationConfigurator_ForType<UObject>& RegisterType(UClass* InClass)
+    {
+        return AddConfigurator< UnrealDI_Impl::TRegistrationConfigurator_ForType< UObject > >(InClass);
+    }
+
+    /*
      * Adds registration for type TObject using provided instance.
      */
     template<typename TObject>

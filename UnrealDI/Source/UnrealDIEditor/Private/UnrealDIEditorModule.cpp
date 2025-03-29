@@ -38,6 +38,7 @@ public:
         if (PropertyModule != nullptr)
         {
             PropertyModule->UnregisterCustomClassLayout(UK2Node_InitDependencies::StaticClass()->GetFName());
+            PropertyModule->UnregisterCustomPropertyTypeLayout(FInitDependenciesNodeEntry::StaticStruct()->GetFName());
         }
 
         if (BlueprintGraphModule != nullptr)

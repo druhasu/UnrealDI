@@ -4,6 +4,7 @@
 
 #include "UObject/Class.h"
 #include "Templates/SubclassOf.h"
+#include "UObject/SoftObjectPtr.h"
 
 namespace UnrealDI_Impl
 {

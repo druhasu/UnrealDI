@@ -37,7 +37,12 @@ namespace UnrealDI_Impl
         TRegistrationConfigurator_ForType(TRegistrationConfigurator_ForType&&) = default;
 
         TRegistrationConfigurator_ForType()
-            : FRegistrationConfiguratorBase(TObject::StaticClass())
+            : TRegistrationConfigurator_ForType(TObject::StaticClass())
+        {
+        }
+
+        TRegistrationConfigurator_ForType(UClass* InType)
+            : FRegistrationConfiguratorBase(InType)
         {
             LifetimeHandlerFactory = &FLifetimeHandler_Transient::Make;
         }

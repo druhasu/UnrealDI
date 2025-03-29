@@ -5,6 +5,7 @@
 #include "DI/Impl/DefaultInstanceFactory.h"
 #include "DI/Impl/DependenciesRegistry.h"
 #include "DI/Impl/Lifetimes.h"
+#include "Algo/Copy.h"
 
 UObject* UObjectContainer::Resolve(UClass* Type) const
 {
@@ -315,6 +316,8 @@ void UObjectContainer::AddReferencedObjects(UObject* InThis, FReferenceCollector
     {
         InstanceFactory.AddReferencedObjects(Collector);
     }
+
+    Super::AddReferencedObjects(InThis, Collector);
 }
 
 UObject* UObjectContainer::ResolveFromContext(const UObject& Context, UClass& Type)

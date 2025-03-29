@@ -13,6 +13,7 @@ FContainerBuilder Builder;
 
 // register type UMyService as implementation of IMyService interface
 Builder.RegisterType<UMyService>().As<IMyService>();
+Builder.RegisterType<UMyOtherService>().As<IMyOtherService>();
 
 // create container itself
 UObjectContainer* Container = Builder.Build();
@@ -21,6 +22,36 @@ UObjectContainer* Container = Builder.Build();
 After that you can ask it to resolve some instances:
 ```cpp
 TScriptInterface<IMyService> MyService = Container->Resolve<IMyService>();
+TScriptInterface<IMyOtherService> MyService = Container->Resolve<IMyOtherService>();
+```
+
+If you need IMyService in some other class, use `InitDependencies`. Container will automatically call this method when it creates the object and provide all requested dependencies
+
+```cpp
+UCLASS()
+class UMyOtherService : public UObject, public IMyOtherService
+{
+    GENERATED_BODY()
+public:
+    void InitDependencies(TScriptInterface<IMyService> InMyService)
+    {
+        // InMyService is always valid here, no need to check for it
+        MyService = InMyService;
+
+        MyService->DoSomething();
+    }
+
+private:
+    // store reference to interface inside a UPROPERTY to protect it from GC
+    UPROPERTY()
+    TScriptInterface<IMyService> MyService;
+};
+```
+
+If you want container to create only one instance of an object and pass it to others, use `WeakSingleInstance` or `SingleInstance` during registration:
+
+```cpp
+Builder.RegisterType<UMyService>().As<IMyService>().SingleInstance();
 ```
 
 ## Supported versions

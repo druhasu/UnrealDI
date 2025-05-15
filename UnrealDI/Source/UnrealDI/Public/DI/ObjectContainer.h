@@ -4,6 +4,7 @@
 
 #include "IResolver.h"
 #include "IInjector.h"
+#include "IInjectorProvider.h"
 #include "DI/Impl/InvokeWithDependencies.h"
 #include "ObjectContainer.generated.h"
 
@@ -15,7 +16,7 @@ namespace UnrealDI_Impl
 }
 
 UCLASS()
-class UNREALDI_API UObjectContainer : public UObject, public IResolver, public IInjector
+class UNREALDI_API UObjectContainer : public UObject, public IResolver, public IInjector, public IInjectorProvider
 {
     GENERATED_BODY()
 
@@ -42,6 +43,10 @@ public:
     bool Inject(UObject* Object) const override;
     bool CanInject(UClass* Class) const override;
     // ~End IInjector interface
+
+    // ~Begin IInjectorProvider interface
+    TScriptInterface<IInjector> GetInjector(UObject* InjectTarget) const override;
+    // ~End IInjectorProvider interface
 
     /*
      * Invokes provided function injecting dependencies into its arguments the same way InitDependencies are usually invoked

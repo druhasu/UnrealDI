@@ -103,7 +103,7 @@ public:
     }
 
     UPROPERTY()
-    UInjectComponent* Component;
+    TObjectPtr<UInjectComponent> Component;
 };
 
 /* Returns specified Injector */

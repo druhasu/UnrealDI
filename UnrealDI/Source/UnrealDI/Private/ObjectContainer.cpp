@@ -135,6 +135,11 @@ bool UObjectContainer::CanInject(UClass* Class) const
     return NativeInitFunction || BlueprintInitFunction;
 }
 
+TScriptInterface<IInjector> UObjectContainer::GetInjector(UObject* InjectTarget) const
+{
+    return const_cast<UObjectContainer*>(this);
+}
+
 void UObjectContainer::AddRegistration(UClass* Interface, TSoftClassPtr<UObject> EffectiveClass, const TSharedRef<UnrealDI_Impl::FLifetimeHandler>& Lifetime)
 {
     FResolversArray& Resolvers = Registrations.FindOrAdd(Interface);

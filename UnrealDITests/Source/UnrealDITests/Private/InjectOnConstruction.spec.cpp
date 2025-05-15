@@ -18,13 +18,14 @@ template <typename TObj>
 void TestCommon(TFunction<TObj*(UWorld*)> ObjFactory)
 {
     FTempWorldHelper Helper;
-    UObjectContainer* Container = FBuildContainerHelper::Build(Helper.World);
+    UObjectContainer* RootContainer = FObjectContainerBuilder().Build();
+    UObjectContainer* Container = FObjectContainerBuilder().BuildNested(*RootContainer);
 
     FInjectOnConstruction::SetContainerForWorld(Helper.World, Container);
 
     TObj* Obj = ObjFactory(Helper.World);
 
-    TestNotNull("Dependency not injected", Obj->Resolver.GetInterface());
+    TestEqual("Resolver", Obj->Resolver, TScriptInterface<IResolver>(Container));
 
     FInjectOnConstruction::ClearContainerForWorld(Helper.World);
 }
@@ -165,6 +166,21 @@ void InjectOnConstructionSpec::Define()
         UInjectObject* Object = NewObject<UInjectObject>(Helper.World); // will call TryInitDependencies from constructor
 
         TestEqual("Resolver", Object->Resolver, TScriptInterface<IResolver>(OtherContainer));
+
+        FInjectOnConstruction::ClearContainerForWorld(Helper.World);
+    });
+
+    It("Should use default IInjectorProvider in Nested container from Nested container", [this]
+    {
+        FTempWorldHelper Helper;
+
+        UObjectContainer* RootContainer = FBuildContainerHelper::Build(Helper.World);
+        UObjectContainer* WorldContainer = FObjectContainerBuilder().BuildNested(*RootContainer);
+        FInjectOnConstruction::SetContainerForWorld(Helper.World, WorldContainer);
+
+        UInjectObject* Object = NewObject<UInjectObject>(Helper.World); // will call TryInitDependencies from constructor
+
+        TestEqual("Resolver", Object->Resolver, TScriptInterface<IResolver>(WorldContainer));
 
         FInjectOnConstruction::ClearContainerForWorld(Helper.World);
     });

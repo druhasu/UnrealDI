@@ -2,7 +2,6 @@
 
 #include "DI/ObjectContainerBuilder.h"
 #include "DI/ObjectContainer.h"
-#include "DI/Impl/DefaultInjectorProvider.h"
 
 UObjectContainer* FObjectContainerBuilder::Build(UObject* Outer)
 {
@@ -34,13 +33,6 @@ void FObjectContainerBuilder::AddRegistrationsToContainer(UObjectContainer* Cont
 {
     using namespace UnrealDI_Impl;
 
-    if (Container->ParentContainer == nullptr)
-    {
-        // add default InjectorProvider before user provided registrations so it may be overriden.
-        // add only in Root container, so user doesn't have to add override in each nested container
-        Container->AddRegistration(UInjectorProvider::StaticClass(), UDefaultInjectorProvider::StaticClass(), MakeShared<FLifetimeHandler_WeakSingleInstance>());
-    }
-
     // add user provided registrations
     for (auto& Registration : Registrations)
     {
@@ -64,6 +56,13 @@ void FObjectContainerBuilder::AddRegistrationsToContainer(UObjectContainer* Cont
 
     // register container itself as IInjector
     Container->AddRegistration(UInjector::StaticClass(), {}, MakeShared<FLifetimeHandler_Instance>(Container));
+
+    // register container itself as IInjectorProvider, if not customized in either self or parent
+    auto [Resolver, _] = Container->FindResolver(UInjectorProvider::StaticClass());
+    if (Resolver == nullptr || Resolver->EffectiveClass.IsNull())
+    {
+        Container->AddRegistration(UInjectorProvider::StaticClass(), {}, MakeShared<FLifetimeHandler_Instance>(Container));
+    }
 
     // finalize creation and let Container create its services
     Container->InitServices();

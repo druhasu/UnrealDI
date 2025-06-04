@@ -200,7 +200,12 @@ public static class CodeGenerator
             return null;
         }
 
+#if UE_5_6_OR_LATER
+        using UhtTokenReplayReaderBorrower borrowedReader = new(uhtClass.HeaderFile, uhtClass.HeaderFile.Data.Memory, declaration.Tokens, UhtTokenType.EndOfDeclaration);
+        IUhtTokenReader tokenReader = borrowedReader.Reader;
+#else
         UhtTokenReplayReader tokenReader = UhtTokenReplayReader.GetThreadInstance(uhtClass, uhtClass.HeaderFile.Data.Memory, declaration.Tokens, UhtTokenType.EndOfDeclaration);
+#endif
         if (!IsValidDeclaration(uhtClass, tokenReader))
         {
             return null;

@@ -40,6 +40,7 @@ public:
      */
     UnrealDI_Impl::TRegistrationConfigurator_ForType<UObject>& RegisterType(UClass* InClass)
     {
+        check(InClass != nullptr);
         return AddConfigurator< UnrealDI_Impl::TRegistrationConfigurator_ForType< UObject > >(InClass);
     }
 
@@ -49,6 +50,7 @@ public:
     template<typename TObject>
     UnrealDI_Impl::TRegistrationConfigurator_ForInstance<TObject>& RegisterInstance(TObject* Instance)
     {
+        check(Instance != nullptr);
         return AddConfigurator< UnrealDI_Impl::TRegistrationConfigurator_ForInstance< TObject > >(Instance);
     }
 
@@ -59,6 +61,7 @@ public:
     template<typename TObject>
     UnrealDI_Impl::TRegistrationConfigurator_ForFactory<TObject>& RegisterFactory(TFunction< TObject* () > Factory)
     {
+        check(Factory.IsSet());
         return AddConfigurator< UnrealDI_Impl::TRegistrationConfigurator_ForFactory< TObject > >(Factory);
     }
 

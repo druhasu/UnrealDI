@@ -366,6 +366,11 @@ public static class CodeGenerator
             // output relative path for files in the "Public" folder
             return headerFile.IncludeFilePath;
         }
+        else if (headerFile.ModuleRelativeFilePath.StartsWith("Classes", StringComparison.OrdinalIgnoreCase))
+        {
+            // output relative path for files in the legacy "Classes" folder
+            return headerFile.IncludeFilePath;
+        }
         else
         {
             // otherwise output full path with module Name

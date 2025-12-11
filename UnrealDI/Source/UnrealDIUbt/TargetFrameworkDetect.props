@@ -17,5 +17,8 @@
 
 		<TargetFramework Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(EngineVersion)', '5.5.0'))">net8.0</TargetFramework>
 		<TargetFramework Condition="$([MSBuild]::VersionLessThan('$(EngineVersion)', '5.5.0'))">net6.0</TargetFramework>
+
+        <DefineConstants Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(EngineVersion)', '5.5.0'))">$(DefineConstants);UE_5_5_OR_LATER</DefineConstants>
+        <DefineConstants Condition="$([MSBuild]::VersionGreaterThanOrEquals('$(EngineVersion)', '5.6.0'))">$(DefineConstants);UE_5_6_OR_LATER</DefineConstants>
 	</PropertyGroup>
 </Project>

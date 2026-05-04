@@ -8,16 +8,44 @@
 #include "DI/Impl/Lifetimes.h"
 #include "Algo/Copy.h"
 
+class FLifetimeHandler_AutoCreate : public UnrealDI_Impl::FLifetimeHandler
+{
+public:
+    static FLifetimeHandler_AutoCreate Instance;
+
+    UObject* Get() override { return nullptr; }
+    UObject* GetOrCreate(const UObject& Context, FNewObjectFactory InNewObjectFactory) override { return InNewObjectFactory(Context, *Class); }
+    void AddReferencedObjects(FReferenceCollector& Collector) override {}
+
+    UClass* Class = nullptr;
+};
+
 FObjectContainerDelegates::FOnObjectCreated FObjectContainerDelegates::OnObjectConstructedDelegate;
 FObjectContainerDelegates::FOnObjectCreated FObjectContainerDelegates::OnObjectInjectedDelegate;
 FObjectContainerDelegates::FOnObjectCreated FObjectContainerDelegates::OnObjectCreatedDelegate;
+
+FLifetimeHandler_AutoCreate FLifetimeHandler_AutoCreate::Instance;
+UObjectContainer::FResolver UObjectContainer::AutoCreateResolver{ &FLifetimeHandler_AutoCreate::Instance };
+
+void UObjectContainer::BeginDestroy()
+{
+    for (UnrealDI_Impl::FLifetimeHandler* Lifetime : AllLifetimes)
+    {
+        UE_ASSUME(Lifetime);
+        delete Lifetime;
+    }
+
+    AllLifetimes.Empty();
+
+    Super::BeginDestroy();
+}
 
 UObject* UObjectContainer::Resolve(UClass* Type) const
 {
     checkf(Type, TEXT("Requested object of null type"));
 
     const auto [Resolver, Container] = GetResolver<true>(Type);
-    return ResolveImpl(*Resolver, Container);
+    return Container->ResolveImpl(*Resolver->Lifetime);
 }
 
 TObjectsCollection<UObject> UObjectContainer::ResolveAll(UClass* Type) const
@@ -40,7 +68,7 @@ UObject* UObjectContainer::TryResolve(UClass* Type) const
     checkf(Type, TEXT("Requested object of null type"));
 
     const auto [Resolver, Container] = GetResolver<false>(Type);
-    return Resolver != nullptr ? ResolveImpl(*Resolver, Container) : nullptr;
+    return Resolver != nullptr ? Container->ResolveImpl(*Resolver->Lifetime) : nullptr;
 }
 
 TObjectsCollection<UObject> UObjectContainer::TryResolveAll(UClass* Type) const
@@ -145,11 +173,11 @@ TScriptInterface<IInjector> UObjectContainer::GetInjector(UObject* InjectTarget)
     return const_cast<UObjectContainer*>(this);
 }
 
-void UObjectContainer::AddRegistration(UClass* Interface, TSoftClassPtr<UObject> EffectiveClass, const TSharedRef<UnrealDI_Impl::FLifetimeHandler>& Lifetime)
+void UObjectContainer::AddRegistration(UClass* Interface, UnrealDI_Impl::FLifetimeHandler* Lifetime)
 {
     FResolversArray& Resolvers = Registrations.FindOrAdd(Interface);
 
-    Resolvers.Emplace(FResolver{ MoveTemp(EffectiveClass), Lifetime });
+    Resolvers.Emplace(FResolver{ Lifetime });
 }
 
 void UObjectContainer::FinalizeCreation()
@@ -194,10 +222,10 @@ TTuple<const UObjectContainer::FResolver*, const UObjectContainer*> UObjectConta
         return MakeTuple(nullptr, this);
     }
 
-    // auto-register Type if no registration found for it
-    FResolversArray& NewArray = const_cast<UObjectContainer*>(this)->Registrations.Emplace(Type, { FResolver { Type, MakeShared<UnrealDI_Impl::FLifetimeHandler_Transient>() } });
+    // configure AutoCreate resolver to a given class
+    FLifetimeHandler_AutoCreate::Instance.Class = Type;
 
-    return MakeTuple(&NewArray.Last(), this);
+    return MakeTuple(&AutoCreateResolver, this);
 }
 
 TTuple<const UObjectContainer::FResolver*, const UObjectContainer*> UObjectContainer::FindResolver(UClass* Type) const
@@ -230,37 +258,9 @@ IInstanceFactory* UObjectContainer::FindInstanceFactory(UClass* Type) const
     return ParentContainer->FindInstanceFactory(Type);
 }
 
-UObject* UObjectContainer::ResolveImpl(const FResolver& Resolver, const UObjectContainer* OwningContainer)
+UObject* UObjectContainer::ResolveImpl(UnrealDI_Impl::FLifetimeHandler& Lifetime) const
 {
-    // cache reference to LifetimeHandler, because reference to Resolver may become invalid during call to Inject due to Registrations map memory reallocation
-    UnrealDI_Impl::FLifetimeHandler& LifetimeHandler = Resolver.LifetimeHandler.Get();
-
-    UObject* Result = LifetimeHandler.Get();
-    if (Result == nullptr)
-    {
-        UClass* EffectiveClass = Resolver.EffectiveClass.LoadSynchronous();
-        check(EffectiveClass != nullptr);
-
-        // create and initialize instance
-        IInstanceFactory* Factory = OwningContainer->FindInstanceFactory(EffectiveClass);
-        check(Factory != nullptr);
-
-        Result = Factory->Create(OwningContainer->OuterForNewObjects, EffectiveClass);
-        checkf(Result != nullptr, TEXT("IInstanceFactory must never return nullptr. Check project specific implementation"));
-        FObjectContainerDelegates::OnObjectConstructedDelegate.Broadcast(*Result, *OwningContainer);
-
-        // Resolver may become invalid after this call to Inject
-        OwningContainer->Inject(Result);
-        FObjectContainerDelegates::OnObjectInjectedDelegate.Broadcast(*Result, *OwningContainer);
-
-        Factory->FinalizeCreation(Result);
-
-        LifetimeHandler.Set(Result);
-
-        FObjectContainerDelegates::OnObjectCreatedDelegate.Broadcast(*Result, *OwningContainer);
-    }
-
-    return Result;
+    return Lifetime.GetOrCreate(*this, &ThisClass::ConstructObject);
 }
 
 template <bool bCheck>
@@ -294,13 +294,13 @@ TObjectsCollection<UObject> UObjectContainer::ResolveAllImpl(UClass* Type) const
     UObject** Iter = Data; // we need a copy of Data, because we will modify it
     for (UObjectContainer* Container : InheritanceChain)
     {
-        // Make a copy of the resolvers list, as the registrations map may reallocate
-        // if auto-registered classes are added during iteration
-        FResolversArray Resolvers = Container->Registrations.FindRef(Type);
-        for (const FResolver& Resolver : Resolvers)
+        if (const FResolversArray* Resolvers = Container->Registrations.Find(Type))
         {
-            *Iter = ResolveImpl(Resolver, Container);
-            ++Iter;
+            for (const FResolver& Resolver : *Resolvers)
+            {
+                *Iter = Container->ResolveImpl(*Resolver.Lifetime);
+                ++Iter;
+            }
         }
     }
 
@@ -321,12 +321,9 @@ void UObjectContainer::AddReferencedObjects(UObject* InThis, FReferenceCollector
 {
     UObjectContainer* Container = (UObjectContainer*)InThis;
 
-    for (auto& Resolvers : Container->Registrations)
+    for (auto& Lifetime : Container->AllLifetimes)
     {
-        for (FResolver& Resolver : Resolvers.Value)
-        {
-            Resolver.LifetimeHandler->AddReferencedObjects(Collector);
-        }
+        Lifetime->AddReferencedObjects(Collector);
     }
 
     for (auto& InstanceFactory : Container->InstanceFactories)
@@ -340,4 +337,27 @@ void UObjectContainer::AddReferencedObjects(UObject* InThis, FReferenceCollector
 UObject* UObjectContainer::ResolveFromContext(const UObject& Context, UClass& Type)
 {
     return static_cast<const UObjectContainer&>(Context).Resolve(&Type);
+}
+
+UObject* UObjectContainer::ConstructObject(const UObject& Context, UClass& Type)
+{
+    const UObjectContainer& OwningContainer = static_cast<const UObjectContainer&>(Context);
+
+    // find appropriate factory for the given InClass
+    IInstanceFactory* Factory = OwningContainer.FindInstanceFactory(&Type);
+    check(Factory != nullptr);
+
+    // create and initialize instance
+    UObject* Result = Factory->Create(OwningContainer.OuterForNewObjects, &Type);
+    checkf(Result != nullptr, TEXT("IInstanceFactory must never return nullptr. Check project specific implementation"));
+
+    FObjectContainerDelegates::OnObjectConstructedDelegate.Broadcast(*Result, OwningContainer);
+
+    OwningContainer.Inject(Result);
+    FObjectContainerDelegates::OnObjectInjectedDelegate.Broadcast(*Result, OwningContainer);
+
+    Factory->FinalizeCreation(Result);
+    FObjectContainerDelegates::OnObjectCreatedDelegate.Broadcast(*Result, OwningContainer);
+
+    return Result;
 }

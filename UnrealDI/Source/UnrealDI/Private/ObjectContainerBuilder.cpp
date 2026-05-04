@@ -33,49 +33,53 @@ void FObjectContainerBuilder::AddRegistrationsToContainer(UObjectContainer* Cont
 {
     using namespace UnrealDI_Impl;
 
+    // reserve memory for all registrations + 1 for container itself
+    Container->AllLifetimes.Reserve(Registrations.Num() + 1);
+
     // add user provided registrations
     for (auto& Registration : Registrations)
     {
-        TSharedRef<FLifetimeHandler> LifetimeHandler = Registration->CreateLifetimeHandler();
+        FLifetimeHandler* LifetimeHandler = Registration->CreateLifetimeHandler();
+        Container->AllLifetimes.Add(LifetimeHandler);
 
         // if no interface types declared, register as itself
         if (Registration->InterfaceTypes.Num() == 0)
         {
-            Container->AddRegistration(Registration->ImplClass, Registration->EffectiveClassPtr, LifetimeHandler);
+            Container->AddRegistration(Registration->ImplClass, LifetimeHandler);
         }
 
         // register all interfaces that this type implements
         for (UClass* Interface : Registration->InterfaceTypes)
         {
-            Container->AddRegistration(Interface, Registration->ImplClass, LifetimeHandler);
+            Container->AddRegistration(Interface, LifetimeHandler);
         }
     }
 
-    TSharedRef<FLifetimeHandler> ContainerInstance = MakeShared<FLifetimeHandler_Instance>(Container);
+    FLifetimeHandler* ContainerInstance = new FLifetimeHandler_Instance(Container);
+    Container->AllLifetimes.Add(ContainerInstance);
 
     // register container itself as IResolver
-    Container->AddRegistration(UResolver::StaticClass(), UObjectContainer::StaticClass(), ContainerInstance);
+    Container->AddRegistration(UResolver::StaticClass(), ContainerInstance);
 
     // register container itself as IInjector
-    Container->AddRegistration(UInjector::StaticClass(), UObjectContainer::StaticClass(), ContainerInstance);
+    Container->AddRegistration(UInjector::StaticClass(), ContainerInstance);
 
     // register container itself as IInjectorProvider, if not customized in either self or parent
     auto [Resolver, _] = Container->FindResolver(UInjectorProvider::StaticClass());
-    if (Resolver == nullptr || Resolver->EffectiveClass == UObjectContainer::StaticClass())
+    if (Resolver == nullptr || Cast<UObjectContainer>(Resolver->Lifetime->Get()) != nullptr)
     {
-        Container->AddRegistration(UInjectorProvider::StaticClass(), UObjectContainer::StaticClass(), ContainerInstance);
+        Container->AddRegistration(UInjectorProvider::StaticClass(), ContainerInstance);
     }
 
     // finalize creation and let Container create its services
     Container->FinalizeCreation();
 
     // resolve all classes that are marked with bAutoCreate
-    for (auto& Registration : Registrations)
+    for (int32 Index = 0; Index < Registrations.Num(); ++Index)
     {
-        if (Registration->bAutoCreate)
+        if (Registrations[Index]->bAutoCreate)
         {
-            UClass* ClassToResolve = Registration->InterfaceTypes.Num() > 0 ? Registration->InterfaceTypes[0] : Registration->ImplClass;
-            Container->Resolve(ClassToResolve);
+            Container->ResolveImpl(*Container->AllLifetimes[Index]);
         }
     }
 }

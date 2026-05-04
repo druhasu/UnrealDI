@@ -36,6 +36,10 @@ class UNREALDI_API UObjectContainer : public UObject, public IResolver, public I
     GENERATED_BODY()
 
 public:
+    // ~Begin UObject overrides
+    void BeginDestroy() override;
+    // ~End UObject overrides
+
     // ~Begin IResolver interface
     UObject* Resolve(UClass* Type) const override;
     TObjectsCollection<UObject> ResolveAll(UClass* Type) const override;
@@ -84,18 +88,17 @@ private:
 
     struct FResolver
     {
-        TSoftClassPtr<UObject> EffectiveClass;
-        TSharedRef<UnrealDI_Impl::FLifetimeHandler> LifetimeHandler;
+        UnrealDI_Impl::FLifetimeHandler* Lifetime;
     };
 
-    void AddRegistration(UClass* Interface, TSoftClassPtr<UObject> EffectiveClass, const TSharedRef< UnrealDI_Impl::FLifetimeHandler >& Lifetime);
+    void AddRegistration(UClass* Interface, UnrealDI_Impl::FLifetimeHandler* Lifetime);
     void FinalizeCreation();
 
     template <bool bCheck>
     TTuple<const FResolver*, const UObjectContainer*> GetResolver(UClass* Type) const;
     TTuple<const FResolver*, const UObjectContainer*> FindResolver(UClass* Type) const;
     IInstanceFactory* FindInstanceFactory(UClass* Type) const;
-    static UObject* ResolveImpl(const FResolver& Resolver, const UObjectContainer* OwningContainer);
+    UObject* ResolveImpl(UnrealDI_Impl::FLifetimeHandler& Lifetime) const;
     template <bool bCheck>
     TObjectsCollection<UObject> ResolveAllImpl(UClass* Type) const;
 
@@ -104,6 +107,7 @@ private:
     static void AddReferencedObjects(UObject* InThis, FReferenceCollector& Collector);
 
     static UObject* ResolveFromContext(const UObject& Context, UClass& Type);
+    static UObject* ConstructObject(const UObject& Context, UClass& Type);
 
     UPROPERTY()
     TObjectPtr<UObject> OuterForNewObjects = nullptr;
@@ -111,10 +115,14 @@ private:
     UPROPERTY()
     TObjectPtr<UObjectContainer> ParentContainer = nullptr;
 
+    TArray<UnrealDI_Impl::FLifetimeHandler*> AllLifetimes;
+
     using FResolversArray = TArray<FResolver, TInlineAllocator<2>>;
     TMap<UClass*, FResolversArray> Registrations;
 
     TArray<TScriptInterface<IInstanceFactory>, TInlineAllocator<4>> InstanceFactories;
 
     TArray<UObjectContainer*> InheritanceChain; // container chain starting from most parent to this one
+
+    static FResolver AutoCreateResolver;
 };

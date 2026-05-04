@@ -210,6 +210,23 @@ void ObjectContainerBuilderSpec::Define()
             UMockReader* Reader = Container->Resolve<UMockReader>();
             TestNotNull("Blueprint Class", Cast<UBlueprintGeneratedClass>(Reader->GetClass()));
         });
+
+        It("Should Register Type From Blueprint as Interface By Class", [this]
+        {
+            TSoftClassPtr<UMockReader> SoftClassPtr(FSoftObjectPath(TEXT("/UnrealDITests/BP_MockReader.BP_MockReader_C")));
+            TSubclassOf<UMockReader> ClassPtr = SoftClassPtr.LoadSynchronous();
+
+            FObjectContainerBuilder Builder;
+            Builder.RegisterType<UMockReader>().As<IReader>().AsSelf().FromBlueprint(ClassPtr);
+
+            UObjectContainer* Container = Builder.Build();
+
+            TestNotNull("Container", Container);
+            TestTrue("UMockReader is registered", Container->IsRegistered<UMockReader>());
+
+            UMockReader* Reader = Container->Resolve<UMockReader>();
+            TestNotNull("Blueprint Class", Cast<UBlueprintGeneratedClass>(Reader->GetClass()));
+        });
     });
 
     Describe("Register Instance", [this]()

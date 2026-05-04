@@ -3,7 +3,6 @@
 #pragma once
 
 #include "Containers/Array.h"
-#include "Templates/SharedPointer.h"
 #include "UObject/SoftObjectPtr.h"
 
 class UClass;
@@ -23,7 +22,7 @@ namespace UnrealDI_Impl
         }
 
         virtual ~FRegistrationConfiguratorBase() = default;
-        virtual TSharedRef<FLifetimeHandler> CreateLifetimeHandler() const = 0;
+        virtual FLifetimeHandler* CreateLifetimeHandler() const = 0;
 
     protected:
         friend class ::FObjectContainerBuilder;

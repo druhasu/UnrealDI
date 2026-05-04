@@ -32,10 +32,10 @@ UObject* FObjectContainerIteratorBase::Get(bool bCreateIfNotExists) const
     auto* Pair = (TPair<UClass*, UObjectContainer::FResolversArray>*)Map->GetData(MapIndex, MapLayout);
     const UObjectContainer::FResolver& Resolver = Pair->Value[ArrayIndex];
 
-    UObject* Result = Resolver.LifetimeHandler->Get();
+    UObject* Result = Resolver.Lifetime->Get();
     if (Result == nullptr && bCreateIfNotExists)
     {
-        Result = UObjectContainer::ResolveImpl(Resolver, Container);
+        Result = Container->ResolveImpl(*Resolver.Lifetime);
     }
 
     return Result;

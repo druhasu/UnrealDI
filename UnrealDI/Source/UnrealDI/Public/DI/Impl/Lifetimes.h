@@ -11,19 +11,29 @@ namespace UnrealDI_Impl
     public:
         virtual ~FLifetimeHandler() = default;
 
+        using FNewObjectFactory = UObject* (*)(const UObject& Context, UClass& NewObjectClass);
+
         virtual UObject* Get() = 0;
-        virtual void Set(UObject* Object) = 0;
+        virtual UObject* GetOrCreate(const UObject& Context, FNewObjectFactory InNewObjectFactory) = 0;
         virtual void AddReferencedObjects(FReferenceCollector& Collector) = 0;
     };
 
     class FLifetimeHandler_Transient : public FLifetimeHandler
     {
     public:
+        FLifetimeHandler_Transient(TSoftClassPtr<UObject>&& InClass)
+            : Class(MoveTemp(InClass))
+        {
+        }
+
         UObject* Get() override { return nullptr; }
-        void Set(UObject* Object) override {}
+        UObject* GetOrCreate(const UObject& Context, FNewObjectFactory InNewObjectFactory) override { return InNewObjectFactory(Context, *Class.LoadSynchronous()); }
         void AddReferencedObjects(FReferenceCollector& Collector) override {}
 
-        static TSharedRef<FLifetimeHandler> Make() { return MakeShared<FLifetimeHandler_Transient>(); }
+        static FLifetimeHandler* Make(TSoftClassPtr<UObject> InClass) { return new FLifetimeHandler_Transient(MoveTemp(InClass)); }
+
+    private:
+        TSoftClassPtr<UObject> Class;
     };
 
     class FLifetimeHandler_StaticFactory : public FLifetimeHandler
@@ -37,7 +47,7 @@ namespace UnrealDI_Impl
         }
 
         UObject* Get() override { return Factory(); }
-        void Set(UObject* Object) override {}
+        UObject* GetOrCreate(const UObject& Context, FNewObjectFactory InNewObjectFactory) override { return Factory(); }
         void AddReferencedObjects(FReferenceCollector& Collector) override {}
 
     private:
@@ -53,7 +63,7 @@ namespace UnrealDI_Impl
         }
 
         UObject* Get() override { return Factory(); }
-        void Set(UObject* Object) override {}
+        UObject* GetOrCreate(const UObject& Context, FNewObjectFactory InNewObjectFactory) override { return Factory(); }
         void AddReferencedObjects(FReferenceCollector& Collector) override {}
 
     private:
@@ -69,7 +79,7 @@ namespace UnrealDI_Impl
         }
 
         UObject* Get() override { return Instance; }
-        void Set(UObject* Object) override {}
+        UObject* GetOrCreate(const UObject& Context, FNewObjectFactory InNewObjectFactory) override { return Instance; }
         void AddReferencedObjects(FReferenceCollector& Collector) override
         {
             Collector.AddReferencedObject(Instance);
@@ -82,29 +92,60 @@ namespace UnrealDI_Impl
     class FLifetimeHandler_SingleInstance : public FLifetimeHandler
     {
     public:
+        FLifetimeHandler_SingleInstance(TSoftClassPtr<UObject>&& InClass)
+            : Class(MoveTemp(InClass))
+        {
+        }
+
         UObject* Get() override { return Instance; }
-        void Set(UObject* Object) override { Instance = Object; }
+        UObject* GetOrCreate(const UObject& Context, FNewObjectFactory InNewObjectFactory) override
+        {
+            if (Instance == nullptr)
+            {
+                Instance = InNewObjectFactory(Context, *Class.LoadSynchronous());
+            }
+
+            return Instance;
+        }
+
         void AddReferencedObjects(FReferenceCollector& Collector) override
         {
             Collector.AddReferencedObject(Instance);
         }
 
-        static TSharedRef<FLifetimeHandler> Make() { return MakeShared<FLifetimeHandler_SingleInstance>(); }
+        static FLifetimeHandler* Make(TSoftClassPtr<UObject> InClass) { return new FLifetimeHandler_SingleInstance(MoveTemp(InClass)); }
 
     private:
+        TSoftClassPtr<UObject> Class;
         TObjectPtr<UObject> Instance = nullptr;
     };
 
     class FLifetimeHandler_WeakSingleInstance : public FLifetimeHandler
     {
     public:
+        FLifetimeHandler_WeakSingleInstance(TSoftClassPtr<UObject>&& InClass)
+            : Class(MoveTemp(InClass))
+        {
+        }
+
         UObject* Get() override { return Instance.Get(); }
-        void Set(UObject* Object) override { Instance = Object; }
+        UObject* GetOrCreate(const UObject& Context, FNewObjectFactory InNewObjectFactory) override
+        {
+            UObject* Result = Instance.Get();
+            if (Result == nullptr)
+            {
+                Instance = Result = InNewObjectFactory(Context, *Class.LoadSynchronous());
+            }
+
+            return Result;
+        }
+
         void AddReferencedObjects(FReferenceCollector& Collector) override {}
 
-        static TSharedRef<FLifetimeHandler> Make() { return MakeShared<FLifetimeHandler_WeakSingleInstance>(); }
+        static FLifetimeHandler* Make(TSoftClassPtr<UObject> InClass) { return new FLifetimeHandler_WeakSingleInstance(MoveTemp(InClass)); }
 
     private:
+        TSoftClassPtr<UObject> Class;
         TWeakObjectPtr<UObject> Instance = nullptr;
     };
 }

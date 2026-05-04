@@ -40,9 +40,9 @@ namespace UnrealDI_Impl
         friend class RegistrationOperations::TAsSelfOperation< ThisType >;
         friend class RegistrationOperations::TByInterfacesOperation< ThisType >;
 
-        TSharedRef<FLifetimeHandler> CreateLifetimeHandler() const override
+        FLifetimeHandler* CreateLifetimeHandler() const override
         {
-            return MakeShared<UnrealDI_Impl::FLifetimeHandler_CustomFactory>(*reinterpret_cast<const TFunction< UObject * () >*>(&Factory));
+            return new UnrealDI_Impl::FLifetimeHandler_CustomFactory(*reinterpret_cast<const TFunction< UObject * () >*>(&Factory));
         }
 
         TFunction< TObject* () > Factory;

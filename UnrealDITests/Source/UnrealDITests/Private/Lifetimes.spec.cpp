@@ -40,8 +40,8 @@ void LifetimesSpec::Define()
             UObject* ResolvedObject = Container->Resolve(UMockReader::StaticClass());
             UMockReader* Reader = Cast<UMockReader>(ResolvedObject);
 
-            TestNotNull("Resolve returned null", ResolvedObject);
-            TestNotNull("Resolve returned wrong type", Reader);
+            TestNotNull("ResolvedObject", ResolvedObject);
+            TestNotNull("Resolved UMockReader", Reader);
         });
 
         It("Should Resolve New Objects", [this]()
@@ -53,7 +53,7 @@ void LifetimesSpec::Define()
             UMockReader* Reader1 = Container->Resolve<UMockReader>();
             UMockReader* Reader2 = Container->Resolve<UMockReader>();
 
-            TestNotEqual("Resolve returned same objects", Reader1, Reader2);
+            TestNotEqual("Resolved Objects", Reader1, Reader2);
         });
     });
 
@@ -68,8 +68,8 @@ void LifetimesSpec::Define()
             UObject* ResolvedObject = Container->Resolve(UMockReader::StaticClass());
             UMockReader* Reader = Cast<UMockReader>(ResolvedObject);
 
-            TestNotNull("Resolve returned null", ResolvedObject);
-            TestNotNull("Resolve returned wrong type", Reader);
+            TestNotNull("ResolvedObject", ResolvedObject);
+            TestNotNull("Resolved UMockReader", Reader);
         });
 
         It("Should Resolve Same Object", [this]()
@@ -81,7 +81,7 @@ void LifetimesSpec::Define()
             UMockReader* Reader1 = Container->Resolve<UMockReader>();
             UMockReader* Reader2 = Container->Resolve<UMockReader>();
 
-            TestEqual("Resolve returned different objects", Reader1, Reader2);
+            TestEqual("Resolved Objects", Reader1, Reader2);
         });
 
         It("Should Survive GC", [this]()
@@ -99,9 +99,9 @@ void LifetimesSpec::Define()
             {
                 UMockReader* Reader2 = Container->Resolve<UMockReader>();
 
-                TestNotNull("Resolve returned nullptr", Reader2);
-                TestTrue("Resolve returned invalid object", Reader2->IsValidLowLevel());
-                TestEqual("Resolve returned different objects", Reader1, Reader2);
+                TestNotNull("Resolved UMockReader after GC", Reader2);
+                TestTrue("UMockReader is valid after GC", Reader2->IsValidLowLevel());
+                TestEqual("Resolved Objects", Reader1, Reader2);
                 Container->RemoveFromRoot();
                 return true;
             }));
@@ -115,7 +115,7 @@ void LifetimesSpec::Define()
             CreateListener<UMockReader> Listener;
             UObjectContainer* Container = Builder.Build();
 
-            TestTrue("Object was not created", Listener.WasCreated);
+            TestTrue("Object was created", Listener.WasCreated);
         });
 
         It("Should Not Create Instance After Build If AutoCreate=false", [this]()
@@ -127,6 +127,20 @@ void LifetimesSpec::Define()
             UObjectContainer* Container = Builder.Build();
 
             TestFalse("Object was created", Listener.WasCreated);
+        });
+
+        It("Should Create Instance After Build If AutoCreate=true and there are other interface registrations", [this]()
+        {
+            FObjectContainerBuilder Builder;
+            Builder.RegisterType<UMockReader>().As<IReader>().SingleInstance(true);
+            Builder.RegisterType<UMockBetterReader>().As<IReader>();
+
+            CreateListener<UMockReader> MockListener;
+            CreateListener<UMockBetterReader> AlternativeListener;
+            UObjectContainer* Container = Builder.Build();
+
+            TestTrue("UMockReader was created", MockListener.WasCreated);
+            TestFalse("UMockBetterReader was created", AlternativeListener.WasCreated);
         });
     });
 
@@ -141,8 +155,8 @@ void LifetimesSpec::Define()
             UObject* ResolvedObject = Container->Resolve(UMockReader::StaticClass());
             UMockReader* Reader = Cast<UMockReader>(ResolvedObject);
 
-            TestNotNull("Resolve returned nullptr", ResolvedObject);
-            TestNotNull("Resolve returned wrong type", Reader);
+            TestNotNull("ResolvedObject", ResolvedObject);
+            TestNotNull("Resolved UMockReader", Reader);
         });
 
         It("Should Resolve Same Object", [this]()
@@ -154,7 +168,7 @@ void LifetimesSpec::Define()
             UMockReader* Reader1 = Container->Resolve<UMockReader>();
             UMockReader* Reader2 = Container->Resolve<UMockReader>();
 
-            TestEqual("Resolve returned different objects", Reader1, Reader2);
+            TestEqual("Resolved Objects", Reader1, Reader2);
         });
 
         It("Should Not Survive GC", [this]()
@@ -172,8 +186,8 @@ void LifetimesSpec::Define()
             {
                 UMockReader* Reader2 = Container->Resolve<UMockReader>();
 
-                TestNotNull("Resolve returned nullptr", Reader2);
-                TestNull("Previous instance was not collected", Reader1.Get());
+                TestNotNull("Resolved UMockReader after GC", Reader2);
+                TestNull("Previous UMockReader instance", Reader1.Get());
                 Container->RemoveFromRoot();
                 return true;
             }));
@@ -191,8 +205,8 @@ void LifetimesSpec::Define()
             UObject* ResolvedObject = Container->Resolve<UMockReader>();
             UMockReader* Reader = Cast<UMockReader>(ResolvedObject);
 
-            TestNotNull("Resolve returned nullptr", ResolvedObject);
-            TestNotNull("Resolve returned wrong type", Reader);
+            TestNotNull("ResolvedObject", ResolvedObject);
+            TestNotNull("Resolved UMockReader", Reader);
         });
 
         It("Should Resolve Same Object", [this]()
@@ -205,7 +219,7 @@ void LifetimesSpec::Define()
 
             UMockReader* Reader2 = Container->Resolve<UMockReader>();
 
-            TestEqual("Resolve returned different objects", Reader1, Reader2);
+            TestEqual("Resolved Objects", Reader1, Reader2);
         });
 
         It("Should Survive GC", [this]()
@@ -222,9 +236,9 @@ void LifetimesSpec::Define()
             {
                 UMockReader* Reader2 = Container->Resolve<UMockReader>();
 
-                TestNotNull("Resolve returned nullptr", Reader2);
-                TestTrue("Resolve returned invalid object", Reader2->IsValidLowLevel());
-                TestEqual("Resolve returned different objects", Reader1, Reader2);
+                TestNotNull("Resolved UMockReader after GC", Reader2);
+                TestTrue("UMockReader is valid after GC", Reader2->IsValidLowLevel());
+                TestEqual("Resolved Objects", Reader1, Reader2);
                 Container->RemoveFromRoot();
                 return true;
             }));

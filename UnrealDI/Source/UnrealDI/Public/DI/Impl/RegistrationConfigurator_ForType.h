@@ -31,7 +31,7 @@ namespace UnrealDI_Impl
         static_assert(!TIsDerivedFrom<TObject, UInterface>::Value, "You are trying to register UInterface derived class. This is probably a typo");
 
         using ImplType = TObject;
-        using FLifetimeHandlerFactory = TSharedRef<FLifetimeHandler>(*)();
+        using FLifetimeHandlerFactory = FLifetimeHandler*(*)(TSoftClassPtr<UObject> InClass);
 
         TRegistrationConfigurator_ForType(const TRegistrationConfigurator_ForType&) = delete;
         TRegistrationConfigurator_ForType(TRegistrationConfigurator_ForType&&) = default;
@@ -55,9 +55,9 @@ namespace UnrealDI_Impl
         friend class RegistrationOperations::TWeakSingleInstanceOperation< ThisType >;
         friend class RegistrationOperations::TFromBlueprintOperation< ThisType, TObject >;
 
-        TSharedRef<FLifetimeHandler> CreateLifetimeHandler() const override
+        FLifetimeHandler* CreateLifetimeHandler() const override
         {
-            return LifetimeHandlerFactory();
+            return LifetimeHandlerFactory(EffectiveClassPtr);
         }
 
         FLifetimeHandlerFactory LifetimeHandlerFactory;

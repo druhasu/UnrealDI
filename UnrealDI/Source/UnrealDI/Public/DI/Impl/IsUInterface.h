@@ -14,12 +14,14 @@ namespace UnrealDI_Impl
     template <typename T>
     struct TIsUInterface
     {
+        PRAGMA_DISABLE_DEPRECATION_WARNINGS
         template<typename U> static decltype(&U::_getUObject) Test(U*);
         template<typename U> static char Test(...);
 
         // Here we check whether given type T has _getUObject() method and is not a UObject itself.
         // We need to check for UObject, because interface implementations inherit _getUObject() from interface base class
         static const bool Value = !std::is_same< char, decltype(Test<T>(nullptr)) >::value && !TIsDerivedFrom<T, UObject>::Value;
+        PRAGMA_ENABLE_DEPRECATION_WARNINGS
     };
 
 }

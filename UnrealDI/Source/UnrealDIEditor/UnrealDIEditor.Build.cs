@@ -6,26 +6,26 @@ public class UnrealDIEditor : ModuleRules
 {
     public UnrealDIEditor(ReadOnlyTargetRules Target) : base(Target)
     {
-        PCHUsage = ModuleRules.PCHUsageMode.UseExplicitOrSharedPCHs;
+        PCHUsage = PCHUsageMode.UseExplicitOrSharedPCHs;
 
         PublicDependencyModuleNames.AddRange(
-            new []
-            {
-                "Core",
-            });
-        
+        [
+            "Core",
+        ]);
+
         PrivateDependencyModuleNames.AddRange(
-            new []
-            {
-                "BlueprintGraph",
-                "CoreUObject",
-                "Engine",
-                "GraphEditor",
-                "KismetCompiler",
-                "Slate",
-                "SlateCore",
-                "UnrealEd",
-                "UnrealDI",
-            });
+        [
+            "BlueprintGraph",
+            "CoreUObject",
+            "Engine",
+            "GraphEditor",
+            "KismetCompiler",
+            "Slate",
+            "SlateCore",
+            "UnrealEd",
+            "UnrealDI",
+        ]);
+
+        UnrealDI.Setup(this);
     }
 }

@@ -66,7 +66,8 @@ This repository contains two plugins:
 ## Installation
 1. Download [latest release](https://github.com/druhasu/UnrealDI/releases)
 2. Extract archive contents into your project /Plugins/UnrealDI folder
-3. Generate project files and build
+3. Add `UnrealDI.Setup(this);` to your .Build.cs file (see [UnrealDITests.Build.cs](https://github.com/druhasu/UnrealDI/blob/master/UnrealDITests/Source/UnrealDITests/UnrealDITests.Build.cs) for example)
+4. Generate project files and build
 
 ## Acknowledgment
 UnrealDI is heavily inspired by [Hypodermic](https://github.com/ybainier/Hypodermic), but designed with Unreal Engine specifics in mind.

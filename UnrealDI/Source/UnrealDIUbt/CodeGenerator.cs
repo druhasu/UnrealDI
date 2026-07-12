@@ -125,7 +125,7 @@ public static class CodeGenerator
         GeneratedFiles.Clear();
 
 #if UE_5_8_OR_LATER
-        var setupModules = FindSetupModules();
+        var (setupModules, rulesCreated) = FindSetupModules();
         if (setupModules == null)
         {
             factory.Session.LogError($"'{ModuleName}.SetupModules' is not available");
@@ -182,7 +182,7 @@ public static class CodeGenerator
 
 #if UE_5_8_OR_LATER
             string moduleName = classesPerModule.Key.ShortName;
-            if (!setupModules.Contains(moduleName))
+            if (rulesCreated && !setupModules.Contains(moduleName))
             {
                 factory.Session.LogError($"Module '{moduleName}' is not setup properly. Make sure to add '{ModuleName}.Setup(this);' into '{moduleName}.Build.cs'");
             }
@@ -404,7 +404,7 @@ public static class CodeGenerator
     }
 
 #if UE_5_8_OR_LATER
-    private static List<string>? FindSetupModules()
+    private static (List<string>? setupModules, bool rulesCreated) FindSetupModules()
     {
         Type? moduleRules = null;
         foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
@@ -414,7 +414,9 @@ public static class CodeGenerator
                 break;
         }
 
-        return moduleRules?.GetProperty("SetupModules", BindingFlags.Public | BindingFlags.Static)?.GetValue(null) as List<string>;
+        var setupModules = moduleRules?.GetProperty("SetupModules", BindingFlags.Public | BindingFlags.Static)?.GetValue(null) as List<string>;
+        var rulesCreated = Equals(moduleRules?.GetProperty("RulesCreated", BindingFlags.Public | BindingFlags.Static)?.GetValue(null), true);
+        return (setupModules, rulesCreated);
     }
 #endif
 }
